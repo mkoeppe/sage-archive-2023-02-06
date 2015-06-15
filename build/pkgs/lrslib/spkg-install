@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+cp -f patches/makefile src/makefile
+
+cd src/
+
+if [ "$SAGE_LOCAL" = "" ]; then
+   echo "SAGE_LOCAL undefined ... exiting";
+   echo "Maybe run 'sage -sh'?"
+   exit 1
+fi
+
+$MAKE all-static
+if [ $? -ne 0 ]; then
+   echo "Error building lrs"
+   exit 1
+fi
+
+$MAKE install-static
+if [ $? -ne 0 ]; then
+   echo "Error installing lrs"
+   exit 1
+fi
+
