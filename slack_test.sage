@@ -5,7 +5,7 @@ A = (
 ) 
 b = (1000, 1500, 500)
 c = (10, 5)
-P = InteractiveLPProblemStandardForm(A, b, c)
+P = InteractiveLPProblemStandardForm(A, b, c, style = 'vanderbei')
 P.decision_variables()
 P.slack_variables()
 D = P.initial_dictionary()	
