@@ -1,0 +1,276 @@
+diff --git a/local/lib/python2.7/site-packages/sage/numerical/interactive_simplex_method.py b/local/lib/python2.7/site-packages/sage/numerical/interactive_simplex_method.py
+index 0c51eca..2dbc4c5 100644
+--- a/local/lib/python2.7/site-packages/sage/numerical/interactive_simplex_method.py
++++ b/local/lib/python2.7/site-packages/sage/numerical/interactive_simplex_method.py
+
+
+@@ -497,7 +495,7 @@ class InteractiveLPProblem(SageObject):
+ 
+     def __init__(self, A, b, c, x="x",
+                  constraint_type="<=", variable_type="", problem_type="max",
+-                 prefix="x", base_ring=None):
++                 prefix="x", base_ring=None, style = None):
+         r"""
+         See :class:`InteractiveLPProblem` for documentation.
+ 
+@@ -513,6 +511,7 @@ class InteractiveLPProblem(SageObject):
+         A = matrix(A)
+         b = vector(b)
+         c = vector(c)
++        self._style = style
+         if base_ring is None:
+             base_ring = vector(A.list() + list(b) + list(c)).base_ring()
+         base_ring = base_ring.fraction_field()
+
+@@ -862,6 +861,7 @@ class InteractiveLPProblem(SageObject):
+             True
+         """
+         A, c, b, x = self.Abcx()
++        style = self._style
+         A = A.transpose()
+         if y is None:
+             y = "x" if self._prefix == "y" else "y"
+@@ -889,7 +889,7 @@ class InteractiveLPProblem(SageObject):
+         if self._is_negative:
+             problem_type = "-" + problem_type
+         return InteractiveLPProblem(A, b, c, y,
+-                         constraint_type, variable_type, problem_type)
++                         constraint_type, variable_type, problem_type, style = style)
+ 
+     @cached_method
+     def feasible_set(self):
+@@ -1276,6 +1276,7 @@ class InteractiveLPProblem(SageObject):
+             (-10, -5)
+         """
+         A, b, c, x = self.Abcx()
++        style = self._style
+         if not all(ct == "<=" for ct in self._constraint_types):
+             newA = []
+             newb = []
+@@ -1313,8 +1314,10 @@ class InteractiveLPProblem(SageObject):
+             is_negative = not is_negative
+             c = - c
+         problem_type = "-max" if is_negative else "max"
++        if style == "vanderbei":
++            self._prefix = "z"
+         return InteractiveLPProblemStandardForm(A, b, c, x, problem_type,
+-                                     self._prefix, self._prefix + "0")
++                                     self._prefix, self._prefix+ "0", style = style)
+ 
+     # Aliases for the standard notation
+     A = constraint_coefficients
+@@ -1395,7 +1398,7 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
+ 
+     def __init__(self, A, b, c, x="x", problem_type="max",
+                  slack_variables=None, auxiliary_variable=None, objective="z",
+-                 base_ring=None):
++                 base_ring=None, style=None):
+         r"""
+         See :class:`StandardFormLPP` for documentation.
+ 
+@@ -1416,10 +1419,24 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
+                                                     variable_type=">=",
+                                                     base_ring=base_ring)
+         n, m = self.n(), self.m()
++        if style == "vanderbei":
++            self._style = "vanderbei"
++        elif style == None:
++            self._style = None
+         if slack_variables is None:
+-           slack_variables = self._prefix
++            if self._style == None:
++                slack_variables = self._prefix
++            elif self._style == 'vanderbei':
++                slack_variables = "w"
++            else:
++                raise ValueError("For educational purposes, style must be \
++                    initialized to vanderbei")
+         if isinstance(slack_variables, str):
+-            slack_variables = ["{}{:d}".format(slack_variables, i)
++            if self._style == 'vanderbei':
++                slack_variables = ["{}{:d}".format(slack_variables, i)
++                               for i in range(1, m + 1)]
++            else:
++                slack_variables = ["{}{:d}".format(slack_variables, i)
+                                for i in range(n + 1, n + m + 1)]
+         else:
+             slack_variables = map(str, slack_variables)
+@@ -1435,7 +1452,13 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
+         x = vector(R.gens()[-n-m:-m])
+         x.set_immutable()
+         self._Abcx = self._Abcx[:-1] + (x, )
+-        self._objective = objective
++        if self._style == 'vanderbei':
++            if problem_type == 'max':
++                self._objective = "zeta"
++            else:
++                self._objective = "-"+"zeta"
++        else:
++            self._objective = objective
+ 
+     def auxiliary_problem(self):
+         r"""
+@@ -1468,16 +1491,23 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
+         """
+         X = self.coordinate_ring().gens()
+         m, n = self.m(), self.n()
++        style = self._style
+         if len(X) == m + n:
+             raise ValueError("auxiliary variable is already among decision "
+                              "ones")
+         F = self.base_ring()
+         A = column_matrix(F, [-1] * m).augment(self.A())
+         c = vector(F, [-1] + [0] * n)
+-        return InteractiveLPProblemStandardForm(A, self.b(), c, X[:-m],
+-                                     slack_variables=X[-m:],
+-                                     auxiliary_variable=X[0],
+-                                     objective="w")
++        if style == "vanderbei":
++            return InteractiveLPProblemStandardForm(A, self.b(), c, X[:-m],
++                                         slack_variables=X[-m:],
++                                         auxiliary_variable=X[0],
++                                         style = style)
++        else:
++            return InteractiveLPProblemStandardForm(A, self.b(), c, X[:-m],
++                                         slack_variables=X[-m:],
++                                         auxiliary_variable=X[0],
++                                         objective="w")
+ 
+     def auxiliary_variable(self):
+         r"""
+@@ -1616,6 +1646,7 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
+         # It is good to have sanity checks in this function, but they are a bit
+         # problematic with numerical dictionaries, so we do only few.
+         x0 = self.auxiliary_variable()
++        style = self._style
+         if x0 not in auxiliary_dictionary.nonbasic_variables():
+             raise ValueError("the auxiliary variable must be non-basic")
+         if not auxiliary_dictionary.is_feasible():
+@@ -1638,7 +1669,7 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
+                 v += cj * b[i]
+         B = map(self._R, B)
+         N = map(self._R, N)
+-        return LPDictionary(A, b, c, v, B, N, self._objective)
++        return LPDictionary(A, b, c, v, B, N, self._objective, style = style)
+ 
+     def final_dictionary(self):
+         r"""
+@@ -1731,9 +1762,10 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
+             sage: D = P.initial_dictionary()
+         """
+         A, b, c, x = self.Abcx()
++        style = self._style
+         x = self._R.gens()
+         m, n = self.m(), self.n()
+-        return LPDictionary(A, b, c, 0, x[-m:], x[-m-n:-m], self._objective)
++        return LPDictionary(A, b, c, 0, x[-m:], x[-m-n:-m], self._objective, style = style)
+ 
+     def inject_variables(self, scope=None, verbose=True):
+         r"""
+@@ -1811,12 +1843,13 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
+             sage: P.revised_dictionary().basic_variables()
+             (x3, x4, x0)
+         """
++        style = self._style
+         if not x_B:
+             x_B = list(self.slack_variables())
+             bm = min(self.b())
+             if bm < 0:
+                 x_B[self.b().list().index(bm)] = self.auxiliary_variable()
+-        return LPRevisedDictionary(self, x_B)
++        return LPRevisedDictionary(self, x_B, style = style)
+ 
+     def run_revised_simplex_method(self):
+         r"""
+
+
+@@ -2642,7 +2674,7 @@ class LPDictionary(LPAbstractDictionary):
+     """
+ 
+     def __init__(self, A, b, c, objective_value,
+-                 basic_variables, nonbasic_variables, objective_variable):
++                 basic_variables, nonbasic_variables, objective_variable, style = None):
+         r"""
+         See :class:`LPDictionary` for documentation.
+ 
+@@ -2665,6 +2697,10 @@ class LPDictionary(LPAbstractDictionary):
+         B = vector(basic_variables)
+         N = vector(nonbasic_variables)
+         self._AbcvBNz = [A, b, c, objective_value, B, N, SR(objective_variable)]
++        if style == "vanderbei":
++            self._style = "vanderbei"
++        else :        
++            self._style = None
+ 
+     def __eq__(self, other):
+         r"""
+@@ -2720,33 +2756,44 @@ class LPDictionary(LPAbstractDictionary):
+
+         """
+         A, b, c, v, B, N, z = self._AbcvBNz
++        style =  self._style
+         lines = []
+         lines.append(r"\renewcommand{\arraystretch}{1.5}")
+         if generate_real_LaTeX:
+             lines[-1] += r" \setlength{\arraycolsep}{0.125em}"
+ #        else:
+ #            lines[-1] += r"\require{color}"
+-        lines.append(r"\begin{array}{|rcr%s|}" % ("cr"*len(N)))
+-        lines.append(r"\hline")
+-        for xi, bi, Ai in zip(B, b, A.rows()):
+-            lines.append(_latex_product(-Ai,N, head=[xi, "=", bi],
+-                                    drop_plus=False, allow_empty=True) + r"\\")
+-        lines.append(r"\hline")
+-        lines.append(_latex_product(c, N, head=[z, "=", v],
+-                                    drop_plus=False, allow_empty=True) + r"\\")
+-        lines.append(r"\hline")
+-        lines.append(r"\end{array}")
++        if style == "vanderbei":
++            lines.append(r"\begin{array}{rcr%s}" % ("cr"*len(N)))
++            lines.append(_latex_product(c, N, head=[z, "=", v],
++                                        drop_plus=False, allow_empty=True) + r"\\")
++            lines.append(r"\hline")
++            for xi, bi, Ai in zip(B, b, A.rows()):
++                lines.append(_latex_product(-Ai,N, head=[xi, "=", bi],
++                                        drop_plus=False, allow_empty=True) + r"\\")
++            lines.append(r"\end{array}")    
++        else:
++            lines.append(r"\begin{array}{|rcr%s|}" % ("cr"*len(N)))
++            lines.append(r"\hline")
++            for xi, bi, Ai in zip(B, b, A.rows()):
++                lines.append(_latex_product(-Ai,N, head=[xi, "=", bi],
++                                        drop_plus=False, allow_empty=True) + r"\\")
++            lines.append(r"\hline")
++            lines.append(_latex_product(c, N, head=[z, "=", v],
++                                        drop_plus=False, allow_empty=True) + r"\\")
++            lines.append(r"\hline")
++            lines.append(r"\end{array}")
+         latex.add_package_to_preamble_if_available("color")
+         if self._entering is not None:
+             # Highlight the entering variable column
+
+ 
+
+ 
+
+@@ -3210,7 +3265,7 @@ class LPRevisedDictionary(LPAbstractDictionary):
+     dictionary entries.
+     """
+ 
+-    def __init__(self, problem, basic_variables):
++    def __init__(self, problem, basic_variables, style = None):
+         r"""
+         See :class:`LPRevisedDictionary` for documentation.
+ 
+@@ -3225,6 +3280,10 @@ class LPRevisedDictionary(LPAbstractDictionary):
+             sage: D = LPRevisedDictionary(P, [1, 2])
+             sage: TestSuite(D).run()
+         """
++        if style == "vanderbei":
++            self._style = "vanderbei"
++        else:
++            self._style = None
+         if problem.auxiliary_variable() == problem.decision_variables()[0]:
+             raise ValueError("revised dictionaries should not be constructed "
+                              "for auxiliary problems")
+
