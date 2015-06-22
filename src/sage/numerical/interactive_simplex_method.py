@@ -596,6 +596,10 @@ class InteractiveLPProblem(SageObject):
             sage: P3 = InteractiveLPProblem(A, c, b, ["C", "B"], variable_type=">=")
             sage: P == P3
             False
+            sage: P = InteractiveLPProblem(A, c, b, ["C", "B"], objective_variable="a")
+            sage: P4 = InteractiveLPProblem(A, c, b, ["C", "B"], style="vanderbei", objective_variable="a")
+            sage: P == P4
+            True
         """
         return (isinstance(other, InteractiveLPProblem) and
                 self.Abcx() == other.Abcx() and
@@ -603,7 +607,8 @@ class InteractiveLPProblem(SageObject):
                 self._is_negative == other._is_negative and
                 self._constraint_types == other._constraint_types and
                 self._variable_types == other._variable_types and
-                self._prefix == other._prefix)
+                self._prefix == other._prefix and 
+                self._objective_variable == other._objective_variable)
 
     def _latex_(self):
         r"""
@@ -866,6 +871,22 @@ class InteractiveLPProblem(SageObject):
             True
             sage: DP.dual(["C", "B"]) == P
             True
+            sage: DP = DP.standard_form()
+            sage: DPSF_initial = DP.initial_dictionary()
+            sage: DPSF_initial.objective_variable()
+            z
+            sage: P = InteractiveLPProblem(A, b, c, ["C", "B"], style="vanderbei")
+            sage: DP = P.dual()
+            sage: DP = DP.standard_form()
+            sage: DPSF_initial = DP.initial_dictionary()
+            sage: DPSF_initial.objective_variable()
+            xi
+            sage: DP = P.dual(objective_variable="dual")
+            sage: DP = DP.standard_form()
+            sage: DPSF_initial = DP.initial_dictionary()
+            sage: DPSF_initial.objective_variable()
+            dual           
+
         """
         A, c, b, x = self.Abcx()
         style = self._style
@@ -1409,6 +1430,7 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
         sage: c = (10, 5)
         sage: P = InteractiveLPProblemStandardForm(A, b, c)
 
+
     Unlike :class:`InteractiveLPProblem`, this class does not allow you to adjust types of
     constraints (they are always ``"<="``) and variables (they are always
     ``">="``), and the problem type may only be ``"max"`` or ``"-max"``.
@@ -1524,6 +1546,19 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
             sage: c = (10, 5)
             sage: P = InteractiveLPProblemStandardForm(A, b, c)
             sage: AP = P.auxiliary_problem()
+            sage: P.objective_variable()
+            z
+            sage: AP.objective_variable()
+            w
+            sage: P = InteractiveLPProblemStandardForm(A, b, c, style="vanderbei")
+            sage: AP = P.auxiliary_problem()
+            sage: AP.objective_variable()
+            xi
+            sage: P = InteractiveLPProblemStandardForm(A, b, c, style="vanderbei")
+            sage: AP = P.auxiliary_problem(objective_variable="aux")
+            sage: AP.objective_variable()
+            aux   
+                     
         """
         X = self.coordinate_ring().gens()
         m, n = self.m(), self.n()
@@ -1852,6 +1887,22 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
             self._R.inject_variables(scope, verbose)
         except AttributeError:
             pass
+
+    def objective_variable(self):
+        r"""
+
+        EXAMPLES::
+
+            sage: A = ([1, 1], [3, 1], [-1, -1])
+            sage: b = (1000, 1500, -400)
+            sage: c = (10, 5)
+            sage: P = InteractiveLPProblemStandardForm(A, b, c)
+            sage: P.objective_variable()
+            z
+
+        """
+        objective_variable = self._objective_variable
+        print objective_variable
 
     def revised_dictionary(self, *x_B):
         r"""
@@ -2762,6 +2813,7 @@ class LPDictionary(LPAbstractDictionary):
             raise ValueError("For educational purposes, style must be \
                 initialized to vanderbei")
         self._problem_type_pda = problem_type_pda
+        self._objective_variable = objective_variable
 
     def __eq__(self, other):
         r"""
@@ -3110,6 +3162,22 @@ class LPDictionary(LPAbstractDictionary):
             0
         """
         return self._AbcvBNz[3]
+
+    def objective_variable(self):
+        r"""
+
+
+        EXAMPLES::
+
+            sage: A = ([1, 1], [3, 1])
+            sage: b = (1000, 1500)
+            sage: c = (10, 5)
+            sage: P = InteractiveLPProblemStandardForm(A, b, c)
+            sage: D = P.initial_dictionary()
+            sage: D.objective_variable()
+            z
+        """
+        print self._objective_variable
 
     def update(self):
         r"""
