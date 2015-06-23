@@ -3315,10 +3315,9 @@ class Polyhedron_base(Element):
 
              David Avis's lrs program.
         """
-        if is_package_installed('lrslib') != True:
-            print 'You must install the optional lrslib package ' \
-                  'for this function to work'
-            raise NotImplementedError
+        if not is_package_installed('lrslib'):
+            raise NotImplementedError('You must install the optional lrslib package '
+                                       'for this function to work')
 
         from sage.misc.temporary_file import tmp_filename
         from subprocess import Popen, PIPE
@@ -3403,7 +3402,7 @@ class Polyhedron_base(Element):
             sage: I = Polyhedron([(0,0), (1,1)])
             sage: I.volume()
             0
-            sage: I.volume(engine='lrs')
+            sage: I.volume(engine='lrs') #optional - lrslib
             1.0
         """
         if engine=='lrs':

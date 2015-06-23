@@ -1915,13 +1915,13 @@ cdef class GLPKBackend(GenericBackend):
         else:
             return 0.0
 
-    cpdef int get_row_stat(self, int variable):
+    cpdef int get_row_stat(self, int i):
         """
         Retrieve the status of a constraint.
 
         INPUT:
 
-        - ``variable`` -- The number of the constraint
+        - ``i`` -- The index of the constraint
         
         OUTPUT:
         
@@ -1951,16 +1951,21 @@ cdef class GLPKBackend(GenericBackend):
             1
             sage: lp.get_row_stat(1)
             3
+            sage: lp.get_row_stat(-1)
+            Exception ValueError: ...
+            0
         """
-        return glp_get_row_stat(self.lp, variable+1)
+        if i < 0 or i >= glp_get_num_rows(self.lp):
+            raise ValueError("The constraint's index i must satisfy 0 <= i < number_of_constraints")
+        return glp_get_row_stat(self.lp, i+1)
 
-    cpdef int get_col_stat(self, int variable):
+    cpdef int get_col_stat(self, int j):
         """
         Retrieve the status of a variable.
         
         INPUT:
 
-        - ``variable`` -- The number of the variable
+        - ``j`` -- The index of the variable
         
         OUTPUT:
 
@@ -1990,8 +1995,204 @@ cdef class GLPKBackend(GenericBackend):
             1
             sage: lp.get_col_stat(1)
             2
+            sage: lp.get_col_stat(-1)
+            Exception ValueError: ...
+            0
         """
-        return glp_get_col_stat(self.lp, variable+1)
+        if j < 0 or j >= glp_get_num_cols(self.lp):
+            raise ValueError("The variable's index j must satisfy 0 <= j < number_of_variables")
+
+        return glp_get_col_stat(self.lp, j+1)
+
+    cpdef eval_tab_row(self, int k):
+        r"""
+        Computes a row of the current simplex tableau,
+        which (row) corresponds to some basic variable specified by the parameter ``k`` as follows:
+
+        - if 0 <= k <= m-1, the basic variable is k-th auxiliary variable,
+
+        - if m <= k <= m+n-1, the basic variable is (k-m)-th structual variable,
+
+        where m is the number of rows and n is the number of columns
+        in the specified problem object.
+
+        .. NOTE::
+
+            The basis factorization must exist.
+            Otherwise a RuntimeError will be raised.
+
+        INPUT:
+
+        - ``k`` (integer) -- the id of the basic variable.
+
+        OUTPUT:
+
+        A pair ``(indices, coeffs)`` where ``indices`` lists the
+        entries whose coefficient is nonzero, and to which ``coeffs``
+        associates their coefficient in the computed row
+        of the current simplex tableau.
+
+        .. NOTE::
+
+            Elements in ``indices`` have the same sense as index k.
+            All these variables are non-basic by definition.
+
+        EXAMPLE::
+
+            sage: from sage.numerical.backends.generic_backend import get_solver
+            sage: lp = get_solver(solver = "GLPK")
+            sage: lp.add_variables(3)
+            2
+            sage: lp.add_linear_constraint(zip([0, 1, 2], [8, 6, 1]), None, 48)
+            sage: lp.add_linear_constraint(zip([0, 1, 2], [4, 2, 1.5]), None, 20)
+            sage: lp.add_linear_constraint(zip([0, 1, 2], [2, 1.5, 0.5]), None, 8)
+            sage: lp.set_objective([60, 30, 20])
+            sage: import sage.numerical.backends.glpk_backend as backend
+            sage: lp.solver_parameter(backend.glp_simplex_or_intopt, backend.glp_simplex_only)
+            sage: lp.eval_tab_row(0)
+            Exception MIPSolverException: ...
+            sage: lp.solve()
+            0
+            sage: lp.eval_tab_row(0)
+            ([1, 2, 4], [-2.0, 8.0, -2.0])
+            sage: lp.eval_tab_row(3)
+            ([1, 2, 4], [-0.5, 1.5, -1.25])
+            sage: lp.eval_tab_row(5)
+            ([1, 2, 4], [2.0, -4.0, 2.0])
+            sage: lp.eval_tab_row(1)
+            Exception MIPSolverException: ...
+            sage: lp.eval_tab_row(-1)
+            Exception ValueError: ...
+
+        """
+        cdef int n = glp_get_num_rows(self.lp)
+        cdef list indices = []
+        cdef list values = []
+        cdef int i,j
+
+        if k < 0 or i >= n + glp_get_num_rows(self.lp):
+            raise ValueError("k = %s; Variable number out of range" % k)
+
+        cdef int * c_indices = <int*> sage_malloc((n+1)*sizeof(int))
+        if c_indices == NULL:
+            raise MemoryError("failed to allocate %s bytes" % ((n+1)*sizeof(int)))
+        cdef double * c_values = <double*> sage_malloc((n+1)*sizeof(double))
+        if c_values == NULL:
+            sage_free(c_indices)
+            raise MemoryError("failed to allocate %s bytes" % ((n+1)*sizeof(double)))
+
+        try:
+            sig_on()
+            i = glp_eval_tab_row(self.lp, k + 1, c_indices, c_values)
+            sig_off()
+        except Exception:
+            sage_free(c_indices)
+            sage_free(c_values)
+            raise MIPSolverException('GLPK : basis factorization does not exist')
+
+        for 0 < j <= i:
+            indices.append(c_indices[j]-1)
+            values.append(c_values[j])
+
+        sage_free(c_indices)
+        sage_free(c_values)
+
+        return (indices, values)
+
+    cpdef eval_tab_col(self, int k):
+        r"""
+        Computes a column of the current simplex tableau,
+        which (column) corresponds to some non-basic variable specified by the parameter ``k`` as follows:
+
+        - if 0 <= k <= m-1, the non-basic variable is k-th auxiliary variable,
+
+        - if m <= k <= m+n-1, the non-basic variable is (k-m)-th structual variable,
+
+        where m is the number of rows and n is the number of columns
+        in the specified problem object.
+
+        .. NOTE::
+
+            The basis factorization must exist.
+            Otherwise a RuntimeError will be raised.
+
+        INPUT:
+
+        - ``k`` (integer) -- the id of the non-basic variable.
+
+        OUTPUT:
+
+        A pair ``(indices, coeffs)`` where ``indices`` lists the
+        entries whose coefficient is nonzero, and to which ``coeffs``
+        associates their coefficient in the computed column
+        of the current simplex tableau.
+
+        .. NOTE::
+
+            Elements in ``indices`` have the same sense as index k.
+            All these variables are basic by definition.
+
+        EXAMPLE::
+
+            sage: from sage.numerical.backends.generic_backend import get_solver
+            sage: lp = get_solver(solver = "GLPK")
+            sage: lp.add_variables(3)
+            2
+            sage: lp.add_linear_constraint(zip([0, 1, 2], [8, 6, 1]), None, 48)
+            sage: lp.add_linear_constraint(zip([0, 1, 2], [4, 2, 1.5]), None, 20)
+            sage: lp.add_linear_constraint(zip([0, 1, 2], [2, 1.5, 0.5]), None, 8)
+            sage: lp.set_objective([60, 30, 20])
+            sage: import sage.numerical.backends.glpk_backend as backend
+            sage: lp.solver_parameter(backend.glp_simplex_or_intopt, backend.glp_simplex_only)
+            sage: lp.eval_tab_col(1)
+            Exception MIPSolverException: ...
+            sage: lp.solve()
+            0
+            sage: lp.eval_tab_col(1)
+            ([0, 5, 3], [-2.0, 2.0, -0.5])
+            sage: lp.eval_tab_col(2)
+            ([0, 5, 3], [8.0, -4.0, 1.5])
+            sage: lp.eval_tab_col(4)
+            ([0, 5, 3], [-2.0, 2.0, -1.25])
+            sage: lp.eval_tab_col(0)
+            Exception MIPSolverException: .....
+            sage: lp.eval_tab_col(-1)
+            Exception ValueError: ...
+
+        """
+        cdef int m = glp_get_num_rows(self.lp)
+        cdef list indices = []
+        cdef list values = []
+        cdef int i,j
+
+        if k < 0 or i >= m + glp_get_num_cols(self.lp):
+            raise ValueError("k = %s; Variable number out of range" % k)
+
+        cdef int * c_indices = <int*> sage_malloc((m+1)*sizeof(int))
+        if c_indices == NULL:
+            raise MemoryError("failed to allocate %s bytes" % ((m+1)*sizeof(int)))
+        cdef double * c_values = <double*> sage_malloc((m+1)*sizeof(double))
+        if c_values == NULL:
+            sage_free(c_indices)
+            raise MemoryError("failed to allocate %s bytes" % ((m+1)*sizeof(double)))
+
+        try:
+            sig_on()
+            i = glp_eval_tab_col(self.lp, k + 1, c_indices, c_values)
+            sig_off()
+        except Exception:
+            sage_free(c_indices)
+            sage_free(c_values)
+            raise MIPSolverException('GLPK : basis factorization does not exist')
+
+        for 0 < j <= i:
+            indices.append(c_indices[j]-1)
+            values.append(c_values[j])
+
+        sage_free(c_indices)
+        sage_free(c_values)
+
+        return (indices, values)
 
     def __dealloc__(self):
         """
@@ -2138,6 +2339,11 @@ glp_undef = GLP_UNDEF
 glp_opt = GLP_OPT
 glp_feas = GLP_FEAS
 glp_nofeas = GLP_NOFEAS
+
+glp_bs = GLP_BS
+glp_nl = GLP_NL
+glp_nu = GLP_NU
+glp_nf = GLP_NF
 
 cdef enum more_parameter_values:
   simplex_only, simplex_then_intopt, intopt_only
