@@ -2936,6 +2936,63 @@ class LPDictionary(LPAbstractDictionary):
             lines[l] = line
         return  "\n".join(lines)
 
+    def add_a_cut(self, choose_variable=None):
+        r"""
+
+        TESTS::
+
+            sage: A = ([-1, 1], [8, 2])
+            sage: b = (2, 17)
+            sage: c = (5.5, 2.1)
+            sage: P = InteractiveLPProblemStandardForm(A, b, c)
+            sage: D = P.final_dictionary()
+            sage: D.add_a_cut()
+            sage: D.basic_variables()
+            (x2, x1, x5)
+
+        """
+
+        A, b, c, v, B, N, z = self._AbcvBNz
+        if all(i.is_integer() is True for i in b):
+            raise ValueError("The dictionary is optimal. There is no way to add a cut.")
+        if choose_variable != None:
+            choose_variable = choose_variable
+        m = A.nrows()
+        n = A.ncols()
+
+        choose_variable_list = [0] * m
+        for i in range(m):
+            choose_variable_list[i] = abs(b[i]- b[i].floor() - 0.5)
+
+        choose_variable_index = choose_variable_list.index(max(choose_variable_list))
+        choose_variable = B[choose_variable_index]
+
+        cut_nonbasic_coefficients = [0] * n
+        for i in range(n):
+            cut_nonbasic_coefficients[i] = A[choose_variable_index][i].floor() - A[choose_variable_index][i] 
+        
+        cut_constant = b[choose_variable_index].floor() - b[choose_variable_index]
+        
+        add_slack_variable_index = m + n + 1
+
+        A = copy(A)
+        A = A.transpose()
+        v = vector(QQ, n, cut_nonbasic_coefficients)
+        A = A.augment(v)
+        A = A.transpose()
+
+        l = list(b)
+        l.append(cut_constant)
+        b = tuple(l)
+
+        l = list(B)
+        l.append(SR("x" + str(add_slack_variable_index)))
+        B = tuple(l)
+
+        self._AbcvBNz[0] = matrix(QQ, A)
+        self._AbcvBNz[1] = b
+        self._AbcvBNz[4] = B
+
     def ELLUL(self, entering, leaving):
         r"""
         Perform the Enter-Leave-LaTeX-Update-LaTeX step sequence on ``self``.
