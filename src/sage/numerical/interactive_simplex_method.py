@@ -494,9 +494,9 @@ class InteractiveLPProblem(SageObject):
     """
 
     def __init__(self, A, b, c, x="x",
-                 constraint_type="<=", variable_type="", problem_type="max",
-                 prefix="x", base_ring=None, style=None, problem_type_pda=None,
-                 objective_variable=None):
+                 constraint_type="<=", variable_type="", 
+                 problem_type="max", prefix="x", base_ring=None, 
+                 style=None, objective_variable=None):
         r"""
         See :class:`InteractiveLPProblem` for documentation.
 
@@ -513,7 +513,6 @@ class InteractiveLPProblem(SageObject):
         b = vector(b)
         c = vector(c)
         self._style = style
-        self._problem_type_pda = problem_type_pda
         self._objective_variable = objective_variable
         if base_ring is None:
             base_ring = vector(A.list() + list(b) + list(c)).base_ring()
@@ -903,7 +902,6 @@ class InteractiveLPProblem(SageObject):
                         'vanderbei'")
         else:
             dual_objective_variable = objective_variable
-        problem_type_pda = "dual"
         A = A.transpose()
         if y is None:
             y = "x" if self._prefix == "y" else "y"
@@ -931,7 +929,7 @@ class InteractiveLPProblem(SageObject):
         if self._is_negative:
             problem_type = "-" + problem_type
         return InteractiveLPProblem(A, b, c, y,constraint_type, 
-            variable_type, problem_type, style=style, problem_type_pda=problem_type_pda,
+            variable_type, problem_type, style=style, 
             objective_variable=dual_objective_variable)
 
     @cached_method
@@ -1320,7 +1318,6 @@ class InteractiveLPProblem(SageObject):
         """
         A, b, c, x = self.Abcx()
         style = self._style
-        problem_type_pda = self._problem_type_pda
         objective_variable = self._objective_variable
         if not all(ct == "<=" for ct in self._constraint_types):
             newA = []
@@ -1359,11 +1356,11 @@ class InteractiveLPProblem(SageObject):
             is_negative = not is_negative
             c = - c
         problem_type = "-max" if is_negative else "max"
+        prefix = self._prefix
         if style == "vanderbei":
-            self._prefix = "z"
-        return InteractiveLPProblemStandardForm(A, b, c, x, problem_type,self._prefix,
-            self._prefix+ "0", style=style, problem_type_pda=problem_type_pda, 
-            objective_variable=objective_variable)
+            prefix = "z"
+        return InteractiveLPProblemStandardForm(A, b, c, x, problem_type, prefix,
+            prefix+ "0", style=style, objective_variable=objective_variable)
 
     # Aliases for the standard notation
     A = constraint_coefficients
@@ -1445,7 +1442,7 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
 
     def __init__(self, A, b, c, x="x", problem_type="max",
                  slack_variables=None, auxiliary_variable=None, objective_variable=None,
-                 base_ring=None, style=None, problem_type_pda=None):
+                 base_ring=None, style=None):
         r"""
         See :class:`StandardFormLPP` for documentation.
 
@@ -1473,7 +1470,6 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
         else:
             raise ValueError("Style must be one of None (the default) or \
                 'vanderbei'")
-        self._problem_type_pda = problem_type_pda
         if slack_variables is None:
             if self._style == None:
                 slack_variables = self._prefix
@@ -1505,10 +1501,7 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
         self._Abcx = self._Abcx[:-1] + (x, )
         if objective_variable == None:
             if self._style == "vanderbei":
-                if self._problem_type_pda == "dual" or self._problem_type_pda == "auxiliary":
-                    variable = "xi"
-                else:
-                    variable = "zeta"
+                variable = "zeta"
                 if problem_type == 'max':
                     self._objective_variable = variable
                 else:
@@ -1563,7 +1556,6 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
         X = self.coordinate_ring().gens()
         m, n = self.m(), self.n()
         style = self._style
-        problem_type_pda = "auxiliary"
         if not isinstance(objective_variable, str):
             if objective_variable != None:
                 aux_objective_variable = map(str, objective_variable)
@@ -1587,7 +1579,6 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
                                          slack_variables=X[-m:],
                                          auxiliary_variable=X[0],
                                          style=style,
-                                         problem_type_pda=problem_type_pda,
                                          objective_variable=aux_objective_variable)
             
 
@@ -1733,7 +1724,6 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
         if not auxiliary_dictionary.is_feasible():
             raise ValueError("the auxiliary dictionary must be feasible")
         style = self._style
-        problem_type_pda = "ordinary primal dictionary"
         objective_variable = self._objective_variable
         A, b, c, v, B, N, z = auxiliary_dictionary._AbcvBNz
         B = tuple(B)
@@ -1753,8 +1743,9 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
                 v += cj * b[i]
         B = map(self._R, B)
         N = map(self._R, N)
-        return LPDictionary(A, b, c, v, B, N, objective_variable=objective_variable, 
-            style=style, problem_type_pda=problem_type_pda)
+        return LPDictionary(A, b, c, v, B, N, 
+            objective_variable=objective_variable, 
+            style=style)
 
     def final_dictionary(self):
         r"""
@@ -1848,12 +1839,11 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
         """
         A, b, c, x = self.Abcx()
         style = self._style
-        problem_type_pda = self._problem_type_pda
         objective_variable = self._objective_variable
         x = self._R.gens()
         m, n = self.m(), self.n()
-        return LPDictionary(A, b, c, 0, x[-m:], x[-m-n:-m], objective_variable=objective_variable, 
-            style=style, problem_type_pda=problem_type_pda)
+        return LPDictionary(A, b, c, 0, x[-m:], x[-m-n:-m], 
+            objective_variable=objective_variable, style=style)
 
     def inject_variables(self, scope=None, verbose=True):
         r"""
@@ -1948,7 +1938,6 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
             (x3, x4, x0)
         """
         style = self._style
-        problem_type_pda = self._problem_type_pda
         objective_variable = self._objective_variable
         if not x_B:
             x_B = list(self.slack_variables())
@@ -1956,7 +1945,7 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
             if bm < 0:
                 x_B[self.b().list().index(bm)] = self.auxiliary_variable()
         return LPRevisedDictionary(self, x_B, style=style, 
-            problem_type_pda=problem_type_pda, objective_variable=objective_variable)
+                objective_variable=objective_variable)
 
     def run_revised_simplex_method(self):
         r"""
@@ -2781,8 +2770,9 @@ class LPDictionary(LPAbstractDictionary):
     """
 
     def __init__(self, A, b, c, objective_value,
-                 basic_variables, nonbasic_variables, objective_variable=None, 
-                 style=None, problem_type_pda=None):
+                 basic_variables, nonbasic_variables, 
+                 objective_variable=None, 
+                 style=None):
         r"""
         See :class:`LPDictionary` for documentation.
 
@@ -2812,7 +2802,6 @@ class LPDictionary(LPAbstractDictionary):
         else:
             raise ValueError("Style must be one of None (the default) or \
                 'vanderbei'")
-        self._problem_type_pda = problem_type_pda
         self._objective_variable = objective_variable
 
     def __eq__(self, other):
@@ -2967,15 +2956,12 @@ class LPDictionary(LPAbstractDictionary):
             choose_variable = basic_variable
             variable_index = list(B).index(choose_variable)
         else:
-            variable_list = []
-            for i in range(m):
-                variable_list.append(abs(b[i]- b[i].floor() - 0.5))
+            variable_list = [abs(b[i]- b[i].floor() - 0.5) for i in range (m)]
             variable_index = variable_list.index(min(variable_list))
             choose_variable = B[variable_index]
 
-        cut_nonbasic_coefficients = []
-        for i in range(n):
-            cut_nonbasic_coefficients.append(A[variable_index][i].floor() - A[variable_index][i]) 
+        cut_nonbasic_coefficients = [ A[variable_index][i].floor() - 
+                                      A[variable_index][i] for i in range (n)]
         cut_constant = b[variable_index].floor() - b[variable_index]
         cut_index = m + n + 1
 
@@ -3475,7 +3461,7 @@ class LPRevisedDictionary(LPAbstractDictionary):
     """
 
     def __init__(self, problem, basic_variables, style=None, 
-        problem_type_pda=None, objective_variable=None):
+                    objective_variable=None):
         r"""
         See :class:`LPRevisedDictionary` for documentation.
 
@@ -3497,7 +3483,6 @@ class LPRevisedDictionary(LPAbstractDictionary):
         else:
             raise ValueError("For educational purposes, style must be \
                 initialized to vanderbei")
-        self._problem_type_pda = problem_type_pda
         self._objective_variable = objective_variable
         if problem.auxiliary_variable() == problem.decision_variables()[0]:
             raise ValueError("revised dictionaries should not be constructed "
