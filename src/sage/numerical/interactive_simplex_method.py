@@ -456,6 +456,34 @@ class InteractiveLPProblem(SageObject):
       input coefficients) a field to which all input coefficients will be
       converted
 
+    - ``style`` -- (default: None) a string specifying the problem type: 
+      either None or "vanderbei". Once the style is chosen to be vanderbei, 
+      the problem and the dictionary will be represented in the style follows 
+      Robert Vanderbei's textbook, Linear Programming Foundation and Extensions.
+
+      If the style is None, the dictionary of the problem will be represented 
+      in a table with both outside borders and inside horizontal borders. 
+      If the style is "vanderbei", the dictionary will be represented in a table 
+      with only one horizontal border between the objective function and the other
+      equations. 
+
+      If the style is None, the objective function will be represented on the 
+      last row of the dictionary.
+      Otherwise, the objective function will be represented on the first row of 
+      the dictionary. 
+      The default of the objective variable is 'z', if the style is None. 
+      If the style is "vanderbei", the default of the objective variable for: 
+      1) a primal problem is 'zeta'
+      2) a dual problem or auxiliary problem is 'xi'
+      Also, if the style is "vanderbei", there will be a negative sign shown in 
+      front of the objective variable in the dictionary.   
+
+    - ``objective_variable`` -- (default: None) a string giving the objective 
+      variable name. If a string is given, the problem and the dictionary will 
+      use the string as the name of the objective variable no matter the style 
+      is None or "vanderbei". Otherwise, the objective variable will use the 
+      default according to the style.  
+
     EXAMPLES:
 
     We will construct the following problem:
@@ -850,10 +878,10 @@ class InteractiveLPProblem(SageObject):
         - ``y`` -- (default: ``"x"`` if the prefix of ``self`` is ``"y"``,
           ``"y"`` otherwise) a vector of dual decision variables or a string
           giving the base name
-        - ``objective_variable`` -- (default: ``"None"`` otherwise) If the user provides that argument, 
+        - ``objective_variable`` -- (default: ``"None"``) If the user provides that argument, 
          use it, regardless of style. However, if it's not provided (None), then: 
-         If style is None, the dual would just use the objective_variable name of the primal. 
-         If style is 'vanderbei', then it would use objective_variable = 'xi'.
+         If style is None, the problem would just use the objective variable name of the primal. 
+         If style is 'vanderbei', then it would assign 'xi' to be the objective variable.    
 
         OUTPUT:
 
@@ -1413,12 +1441,37 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
       name, expected to be the same as the first decision variable for
       auxiliary problems
 
-    - ``objective_variable`` -- (default: ``"z"``) the objective variable (used for the
-      initial dictionary)
-
     - ``base_ring`` -- (default: the fraction field of a common ring for all
       input coefficients) a field to which all input coefficients will be
       converted
+
+    - ``style`` -- (default: None) a string specifying the problem type: 
+      either None or "vanderbei". Once the style is chosen to be vanderbei, 
+      the problem and the dictionary will be represented in the style follows 
+      Robert Vanderbei's textbook, Linear Programming Foundation and Extensions.
+
+      If the style is None, the dictionary of the problem will be represented 
+      in a table with both outside borders and inside horizontal borders. 
+      If the style is "vanderbei", the dictionary will be represented in a table 
+      with only one horizontal border between the objective function and the other
+      equations. 
+
+      If the style is None, the objective function will be represented on the 
+      last row of the dictionary.
+      Otherwise, the objective function will be represented on the first row of 
+      the dictionary. 
+      The default of the objective variable is 'z', if the style is None. 
+      If the style is "vanderbei", the default of the objective variable for: 
+      1) a primal problem is 'zeta'
+      2) a dual problem or auxiliary problem is 'xi'
+      Also, if the style is "vanderbei", there will be a negative sign shown in 
+      front of the objective variable in the dictionary.   
+
+    - ``objective_variable`` -- (default: None) a string giving the objective 
+      variable name. If a string is given, the problem and the dictionary will 
+      use the string as the name of the objective variable no matter the style 
+      is None or "vanderbei". Otherwise, the objective variable will use the 
+      default according to the style.  
 
     EXAMPLES::
 
@@ -1441,8 +1494,8 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
     """
 
     def __init__(self, A, b, c, x="x", problem_type="max",
-                 slack_variables=None, auxiliary_variable=None, objective_variable=None,
-                 base_ring=None, style=None):
+                 slack_variables=None, auxiliary_variable=None,
+                 base_ring=None, style=None, objective_variable=None):
         r"""
         See :class:`StandardFormLPP` for documentation.
 
@@ -1514,6 +1567,13 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
     def auxiliary_problem(self, objective_variable=None):
         r"""
         Construct the auxiliary problem for ``self``.
+
+        INPUT:
+
+        - ``objective_variable`` -- (default: ``"None"``) If the user provides that argument, 
+         use it, regardless of style. However, if it's not provided (None), then: 
+         If style is None, the problem would just use the objective variable name of the primal. 
+         If style is 'vanderbei', then it would assign 'xi' to be the objective variable.        
 
         OUTPUT:
 
@@ -2732,7 +2792,33 @@ class LPDictionary(LPAbstractDictionary):
 
     - ``nonbasic_variables`` -- a list of non-basic variables `x_N`
 
-    - ``objective_variable`` -- an objective variable `z`
+    - ``style`` -- (default: None) a string specifying the problem type: 
+      either None or "vanderbei". Once the style is chosen to be vanderbei, 
+      the problem and the dictionary will be represented in the style follows 
+      Robert Vanderbei's textbook, Linear Programming Foundation and Extensions.
+
+      If the style is None, the dictionary of the problem will be represented 
+      in a table with both outside borders and inside horizontal borders. 
+      If the style is "vanderbei", the dictionary will be represented in a table 
+      with only one horizontal border between the objective function and the other
+      equations. 
+
+      If the style is None, the objective function will be represented on the 
+      last row of the dictionary.
+      Otherwise, the objective function will be represented on the first row of 
+      the dictionary. 
+      The default of the objective variable is 'z', if the style is None. 
+      If the style is "vanderbei", the default of the objective variable for: 
+      1) a primal problem is 'zeta'
+      2) a dual problem or auxiliary problem is 'xi'
+      Also, if the style is "vanderbei", there will be a negative sign shown in 
+      front of the objective variable in the dictionary.   
+
+    - ``objective_variable`` -- (default: None) a string giving the objective 
+      variable name. If a string is given, the problem and the dictionary will 
+      use the string as the name of the objective variable no matter the style 
+      is None or "vanderbei". Otherwise, the objective variable will use the 
+      default according to the style.  
 
     OUTPUT:
 
@@ -2927,6 +3013,20 @@ class LPDictionary(LPAbstractDictionary):
 
     def add_a_cut(self, basic_variable=None):
         r"""
+
+        Update the dictionary by adding a Gomory fractional cut
+
+        INPUT:
+
+        -``basic_variable`` -- (default: None) a string specifying
+        the basic variable that will provide the source row for the cut. 
+
+        OUTPUT:
+        
+        -none, but the dictionary will be updated with an additional 
+        row that is constructed from a Gomory fractional cut, while the 
+        source row can be chosen by the user or picked by the most 
+        fractional basic variable
 
         TESTS::
 
