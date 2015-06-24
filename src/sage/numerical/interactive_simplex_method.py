@@ -458,6 +458,34 @@ class InteractiveLPProblem(SageObject):
       input coefficients) a field to which all input coefficients will be
       converted
 
+    - ``style`` -- (default: None) a string specifying the problem type: 
+      either None or "vanderbei". Once the style is chosen to be vanderbei, 
+      the problem and the dictionary will be represented in the style follows 
+      Robert Vanderbei's textbook, Linear Programming Foundation and Extensions.
+
+      If the style is None, the dictionary of the problem will be represented 
+      in a table with both outside borders and inside horizontal borders. 
+      If the style is "vanderbei", the dictionary will be represented in a table 
+      with only one horizontal border between the objective function and the other
+      equations. 
+
+      If the style is None, the objective function will be represented on the 
+      last row of the dictionary.
+      Otherwise, the objective function will be represented on the first row of 
+      the dictionary. 
+      The default of the objective variable is 'z', if the style is None. 
+      If the style is "vanderbei", the default of the objective variable for: 
+      1) a primal problem is 'zeta'
+      2) a dual problem or auxiliary problem is 'xi'
+      Also, if the style is "vanderbei", there will be a negative sign shown in 
+      front of the objective variable in the dictionary.   
+
+    - ``objective_variable`` -- (default: None) a string giving the objective 
+      variable name. If a string is given, the problem and the dictionary will 
+      use the string as the name of the objective variable no matter the style 
+      is None or "vanderbei". Otherwise, the objective variable will use the 
+      default according to the style.  
+
     EXAMPLES:
 
     We will construct the following problem:
@@ -496,9 +524,9 @@ class InteractiveLPProblem(SageObject):
     """
 
     def __init__(self, A, b, c, x="x",
-                 constraint_type="<=", variable_type="", problem_type="max",
-                 prefix="x", base_ring=None, style=None, problem_type_pda=None,
-                 objective_variable=None):
+                 constraint_type="<=", variable_type="", 
+                 problem_type="max", prefix="x", base_ring=None, 
+                 style=None, objective_variable=None):
         r"""
         See :class:`InteractiveLPProblem` for documentation.
 
@@ -515,7 +543,6 @@ class InteractiveLPProblem(SageObject):
         b = vector(b)
         c = vector(c)
         self._style = style
-        self._problem_type_pda = problem_type_pda
         self._objective_variable = objective_variable
         if base_ring is None:
             base_ring = vector(A.list() + list(b) + list(c)).base_ring()
@@ -853,10 +880,10 @@ class InteractiveLPProblem(SageObject):
         - ``y`` -- (default: ``"x"`` if the prefix of ``self`` is ``"y"``,
           ``"y"`` otherwise) a vector of dual decision variables or a string
           giving the base name
-        - ``objective_variable`` -- (default: ``"None"`` otherwise) If the user provides that argument, 
+        - ``objective_variable`` -- (default: ``"None"``) If the user provides that argument, 
          use it, regardless of style. However, if it's not provided (None), then: 
-         If style is None, the dual would just use the objective_variable name of the primal. 
-         If style is 'vanderbei', then it would use objective_variable = 'xi'.
+         If style is None, the problem would just use the objective variable name of the primal. 
+         If style is 'vanderbei', then it would assign 'xi' to be the objective variable.    
 
         OUTPUT:
 
@@ -905,7 +932,6 @@ class InteractiveLPProblem(SageObject):
                         'vanderbei'")
         else:
             dual_objective_variable = objective_variable
-        problem_type_pda = "dual"
         A = A.transpose()
         if y is None:
             y = "x" if self._prefix == "y" else "y"
@@ -933,7 +959,7 @@ class InteractiveLPProblem(SageObject):
         if self._is_negative:
             problem_type = "-" + problem_type
         return InteractiveLPProblem(A, b, c, y,constraint_type, 
-            variable_type, problem_type, style=style, problem_type_pda=problem_type_pda,
+            variable_type, problem_type, style=style, 
             objective_variable=dual_objective_variable)
 
     @cached_method
@@ -1322,7 +1348,6 @@ class InteractiveLPProblem(SageObject):
         """
         A, b, c, x = self.Abcx()
         style = self._style
-        problem_type_pda = self._problem_type_pda
         objective_variable = self._objective_variable
         if not all(ct == "<=" for ct in self._constraint_types):
             newA = []
@@ -1361,11 +1386,11 @@ class InteractiveLPProblem(SageObject):
             is_negative = not is_negative
             c = - c
         problem_type = "-max" if is_negative else "max"
+        prefix = self._prefix
         if style == "vanderbei":
-            self._prefix = "z"
-        return InteractiveLPProblemStandardForm(A, b, c, x, problem_type,self._prefix,
-            self._prefix+ "0", style=style, problem_type_pda=problem_type_pda, 
-            objective_variable=objective_variable)
+            prefix = "z"
+        return InteractiveLPProblemStandardForm(A, b, c, x, problem_type, prefix,
+            prefix+ "0", style=style, objective_variable=objective_variable)
 
     # Aliases for the standard notation
     A = constraint_coefficients
@@ -1418,12 +1443,37 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
       name, expected to be the same as the first decision variable for
       auxiliary problems
 
-    - ``objective_variable`` -- (default: ``"z"``) the objective variable (used for the
-      initial dictionary)
-
     - ``base_ring`` -- (default: the fraction field of a common ring for all
       input coefficients) a field to which all input coefficients will be
       converted
+
+    - ``style`` -- (default: None) a string specifying the problem type: 
+      either None or "vanderbei". Once the style is chosen to be vanderbei, 
+      the problem and the dictionary will be represented in the style follows 
+      Robert Vanderbei's textbook, Linear Programming Foundation and Extensions.
+
+      If the style is None, the dictionary of the problem will be represented 
+      in a table with both outside borders and inside horizontal borders. 
+      If the style is "vanderbei", the dictionary will be represented in a table 
+      with only one horizontal border between the objective function and the other
+      equations. 
+
+      If the style is None, the objective function will be represented on the 
+      last row of the dictionary.
+      Otherwise, the objective function will be represented on the first row of 
+      the dictionary. 
+      The default of the objective variable is 'z', if the style is None. 
+      If the style is "vanderbei", the default of the objective variable for: 
+      1) a primal problem is 'zeta'
+      2) a dual problem or auxiliary problem is 'xi'
+      Also, if the style is "vanderbei", there will be a negative sign shown in 
+      front of the objective variable in the dictionary.   
+
+    - ``objective_variable`` -- (default: None) a string giving the objective 
+      variable name. If a string is given, the problem and the dictionary will 
+      use the string as the name of the objective variable no matter the style 
+      is None or "vanderbei". Otherwise, the objective variable will use the 
+      default according to the style.  
 
     EXAMPLES::
 
@@ -1446,8 +1496,8 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
     """
 
     def __init__(self, A, b, c, x="x", problem_type="max",
-                 slack_variables=None, auxiliary_variable=None, objective_variable=None,
-                 base_ring=None, style=None, problem_type_pda=None):
+                 slack_variables=None, auxiliary_variable=None,
+                 base_ring=None, style=None, objective_variable=None):
         r"""
         See :class:`StandardFormLPP` for documentation.
 
@@ -1475,7 +1525,6 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
         else:
             raise ValueError("Style must be one of None (the default) or \
                 'vanderbei'")
-        self._problem_type_pda = problem_type_pda
         if slack_variables is None:
             if self._style == None:
                 slack_variables = self._prefix
@@ -1507,10 +1556,7 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
         self._Abcx = self._Abcx[:-1] + (x, )
         if objective_variable == None:
             if self._style == "vanderbei":
-                if self._problem_type_pda == "dual" or self._problem_type_pda == "auxiliary":
-                    variable = "xi"
-                else:
-                    variable = "zeta"
+                variable = "zeta"
                 if problem_type == 'max':
                     self._objective_variable = variable
                 else:
@@ -1523,6 +1569,13 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
     def auxiliary_problem(self, objective_variable=None):
         r"""
         Construct the auxiliary problem for ``self``.
+
+        INPUT:
+
+        - ``objective_variable`` -- (default: ``"None"``) If the user provides that argument, 
+         use it, regardless of style. However, if it's not provided (None), then: 
+         If style is None, the problem would just use the objective variable name of the primal. 
+         If style is 'vanderbei', then it would assign 'xi' to be the objective variable.        
 
         OUTPUT:
 
@@ -1565,7 +1618,6 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
         X = self.coordinate_ring().gens()
         m, n = self.m(), self.n()
         style = self._style
-        problem_type_pda = "auxiliary"
         if not isinstance(objective_variable, str):
             if objective_variable != None:
                 aux_objective_variable = map(str, objective_variable)
@@ -1589,7 +1641,6 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
                                          slack_variables=X[-m:],
                                          auxiliary_variable=X[0],
                                          style=style,
-                                         problem_type_pda=problem_type_pda,
                                          objective_variable=aux_objective_variable)
             
 
@@ -1735,7 +1786,6 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
         if not auxiliary_dictionary.is_feasible():
             raise ValueError("the auxiliary dictionary must be feasible")
         style = self._style
-        problem_type_pda = "ordinary primal dictionary"
         objective_variable = self._objective_variable
         A, b, c, v, B, N, z = auxiliary_dictionary._AbcvBNz
         B = tuple(B)
@@ -1755,8 +1805,9 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
                 v += cj * b[i]
         B = [self._R(_) for _ in B]
         N = [self._R(_) for _ in N]
-        return LPDictionary(A, b, c, v, B, N, objective_variable=objective_variable, 
-            style=style, problem_type_pda=problem_type_pda)
+        return LPDictionary(A, b, c, v, B, N, 
+            objective_variable=objective_variable, 
+            style=style)
 
     def final_dictionary(self):
         r"""
@@ -1850,12 +1901,11 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
         """
         A, b, c, x = self.Abcx()
         style = self._style
-        problem_type_pda = self._problem_type_pda
         objective_variable = self._objective_variable
         x = self._R.gens()
         m, n = self.m(), self.n()
-        return LPDictionary(A, b, c, 0, x[-m:], x[-m-n:-m], objective_variable=objective_variable, 
-            style=style, problem_type_pda=problem_type_pda)
+        return LPDictionary(A, b, c, 0, x[-m:], x[-m-n:-m], 
+            objective_variable=objective_variable, style=style)
 
     def inject_variables(self, scope=None, verbose=True):
         r"""
@@ -1950,7 +2000,6 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
             (x3, x4, x0)
         """
         style = self._style
-        problem_type_pda = self._problem_type_pda
         objective_variable = self._objective_variable
         if not x_B:
             x_B = list(self.slack_variables())
@@ -1958,7 +2007,7 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
             if bm < 0:
                 x_B[self.b().list().index(bm)] = self.auxiliary_variable()
         return LPRevisedDictionary(self, x_B, style=style, 
-            problem_type_pda=problem_type_pda, objective_variable=objective_variable)
+                objective_variable=objective_variable)
 
     def run_revised_simplex_method(self):
         r"""
@@ -2746,7 +2795,33 @@ class LPDictionary(LPAbstractDictionary):
 
     - ``nonbasic_variables`` -- a list of non-basic variables `x_N`
 
-    - ``objective_variable`` -- an objective variable `z`
+    - ``style`` -- (default: None) a string specifying the problem type: 
+      either None or "vanderbei". Once the style is chosen to be vanderbei, 
+      the problem and the dictionary will be represented in the style follows 
+      Robert Vanderbei's textbook, Linear Programming Foundation and Extensions.
+
+      If the style is None, the dictionary of the problem will be represented 
+      in a table with both outside borders and inside horizontal borders. 
+      If the style is "vanderbei", the dictionary will be represented in a table 
+      with only one horizontal border between the objective function and the other
+      equations. 
+
+      If the style is None, the objective function will be represented on the 
+      last row of the dictionary.
+      Otherwise, the objective function will be represented on the first row of 
+      the dictionary. 
+      The default of the objective variable is 'z', if the style is None. 
+      If the style is "vanderbei", the default of the objective variable for: 
+      1) a primal problem is 'zeta'
+      2) a dual problem or auxiliary problem is 'xi'
+      Also, if the style is "vanderbei", there will be a negative sign shown in 
+      front of the objective variable in the dictionary.   
+
+    - ``objective_variable`` -- (default: None) a string giving the objective 
+      variable name. If a string is given, the problem and the dictionary will 
+      use the string as the name of the objective variable no matter the style 
+      is None or "vanderbei". Otherwise, the objective variable will use the 
+      default according to the style.  
 
     OUTPUT:
 
@@ -2784,8 +2859,9 @@ class LPDictionary(LPAbstractDictionary):
     """
 
     def __init__(self, A, b, c, objective_value,
-                 basic_variables, nonbasic_variables, objective_variable=None, 
-                 style=None, problem_type_pda=None):
+                 basic_variables, nonbasic_variables, 
+                 objective_variable=None, 
+                 style=None):
         r"""
         See :class:`LPDictionary` for documentation.
 
@@ -2815,7 +2891,6 @@ class LPDictionary(LPAbstractDictionary):
         else:
             raise ValueError("Style must be one of None (the default) or \
                 'vanderbei'")
-        self._problem_type_pda = problem_type_pda
         self._objective_variable = objective_variable
 
     def __eq__(self, other):
@@ -2933,6 +3008,20 @@ class LPDictionary(LPAbstractDictionary):
     def add_a_cut(self, basic_variable=None):
         r"""
 
+        Update the dictionary by adding a Gomory fractional cut
+
+        INPUT:
+
+        -``basic_variable`` -- (default: None) a string specifying
+        the basic variable that will provide the source row for the cut. 
+
+        OUTPUT:
+        
+        -none, but the dictionary will be updated with an additional 
+        row that is constructed from a Gomory fractional cut, while the 
+        source row can be chosen by the user or picked by the most 
+        fractional basic variable
+
         TESTS::
 
             sage: A = ([-1, 1], [8, 2])
@@ -2961,15 +3050,12 @@ class LPDictionary(LPAbstractDictionary):
             choose_variable = basic_variable
             variable_index = list(B).index(choose_variable)
         else:
-            variable_list = []
-            for i in range(m):
-                variable_list.append(abs(b[i]- b[i].floor() - 0.5))
+            variable_list = [abs(b[i]- b[i].floor() - 0.5) for i in range (m)]
             variable_index = variable_list.index(min(variable_list))
             choose_variable = B[variable_index]
 
-        cut_nonbasic_coefficients = []
-        for i in range(n):
-            cut_nonbasic_coefficients.append(A[variable_index][i].floor() - A[variable_index][i]) 
+        cut_nonbasic_coefficients = [ A[variable_index][i].floor() - 
+                                      A[variable_index][i] for i in range (n)]
         cut_constant = b[variable_index].floor() - b[variable_index]
         cut_index = m + n + 1
 
@@ -3470,7 +3556,7 @@ class LPRevisedDictionary(LPAbstractDictionary):
     """
 
     def __init__(self, problem, basic_variables, style=None, 
-        problem_type_pda=None, objective_variable=None):
+                    objective_variable=None):
         r"""
         See :class:`LPRevisedDictionary` for documentation.
 
@@ -3492,7 +3578,6 @@ class LPRevisedDictionary(LPAbstractDictionary):
         else:
             raise ValueError("For educational purposes, style must be \
                 initialized to vanderbei")
-        self._problem_type_pda = problem_type_pda
         self._objective_variable = objective_variable
         if problem.auxiliary_variable() == problem.decision_variables()[0]:
             raise ValueError("revised dictionaries should not be constructed "
