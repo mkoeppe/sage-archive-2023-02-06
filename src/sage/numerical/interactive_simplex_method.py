@@ -2936,7 +2936,7 @@ class LPDictionary(LPAbstractDictionary):
             lines[l] = line
         return  "\n".join(lines)
 
-    def add_a_cut(self, choose_variable=None):
+    def add_a_cut(self, leave_variable=None):
         r"""
 
         TESTS::
@@ -2949,33 +2949,38 @@ class LPDictionary(LPAbstractDictionary):
             sage: D.add_a_cut()
             sage: D.basic_variables()
             (x2, x1, x5)
+            sage: D.leave(5)
+            sage: D.leaving_coefficients()
+            (-1/10, -4/5)
+            sage: D.constant_terms()
+            (3.30000000000000, 1.30000000000000, -0.300000000000000)
 
         """
 
         A, b, c, v, B, N, z = self._AbcvBNz
-        if all(i.is_integer() is True for i in b):
-            raise ValueError("The dictionary is optimal. There is no way to add a cut.")
-        if choose_variable != None:
-            choose_variable = choose_variable
         m = A.nrows()
         n = A.ncols()
+        if all(i.is_integer() is True for i in b):
+            raise ValueError("The dictionary is optimal. There is no way to add a cut.")
+        if leave_variable != None:
+            leave_variable = variable(self.coordinate_ring(), leave_variable)
+            choose_variable = leave_variable
+            choose_variable_index = list(B).index(choose_variable)
 
-        choose_variable_list = [0] * m
-        for i in range(m):
-            choose_variable_list[i] = abs(b[i]- b[i].floor() - 0.5)
-
-        choose_variable_index = choose_variable_list.index(max(choose_variable_list))
-        choose_variable = B[choose_variable_index]
-
+        else:
+            choose_variable_list = [0] * m
+            for i in range(m):
+                choose_variable_list[i] = abs(b[i]- b[i].floor() - 0.5)
+            choose_variable_index = choose_variable_list.index(min(choose_variable_list))
+            choose_variable = B[choose_variable_index]
         cut_nonbasic_coefficients = [0] * n
         for i in range(n):
             cut_nonbasic_coefficients[i] = A[choose_variable_index][i].floor() - A[choose_variable_index][i] 
         
         cut_constant = b[choose_variable_index].floor() - b[choose_variable_index]
-        
+
         add_slack_variable_index = m + n + 1
 
-        A = copy(A)
         A = A.transpose()
         v = vector(QQ, n, cut_nonbasic_coefficients)
         A = A.augment(v)
@@ -2989,9 +2994,19 @@ class LPDictionary(LPAbstractDictionary):
         l.append(SR("x" + str(add_slack_variable_index)))
         B = tuple(l)
 
+        #Construct a larger ring
+        R = B[0].parent()
+        G = list(R.gens())
+        G.append(SR("x" + str(add_slack_variable_index)))
+        R = PolynomialRing(QQ, G, order="neglex")
+        #Update B and N to the larger ring
+        B2 = vector([ R(x) for x in B])
+        N2 = vector([ R(x) for x in N])
+
         self._AbcvBNz[0] = matrix(QQ, A)
         self._AbcvBNz[1] = b
-        self._AbcvBNz[4] = B
+        self._AbcvBNz[4] = B2
+        self._AbcvBNz[5] = N2
 
     def ELLUL(self, entering, leaving):
         r"""
@@ -3235,6 +3250,17 @@ class LPDictionary(LPAbstractDictionary):
             z
         """
         print self._objective_variable
+
+    def solve_added_a_cut_dictionary(self):
+
+        A, b, c, v, B, N, z = self._AbcvBNz
+        D = InteractiveLPProblem(A, b, c)
+        D = D.dual()
+        # view(D)
+        # D = D.standard_form()
+        # view(D.initial_dictionary())
+        # D = D.final_dictionary()
+        return D
 
     def update(self):
         r"""
