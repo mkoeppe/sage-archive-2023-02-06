@@ -3109,22 +3109,28 @@ class LPDictionary(LPAbstractDictionary):
 
         Perform the cutting plane method to solve a ILP or MIP problem.
 
+        EXAMPLES::
+
+            sage: A = ([-1, 1], [8, 2])
+            sage: b = (2, 17)
+            sage: c = (55/10, 21/10)
+            sage: P = InteractiveLPProblemStandardForm(A, b, c)
+            sage: D = P.final_dictionary()
+            sage: D.add_a_cutting_plane()
+            The total number of cuts is  5
+
         """
         d = self
         number_of_cut = 0
-        print(number_of_cut)
         while True:
             d.add_a_cut()
-            print("add a cut")
             d.run_dual_simplex_method()
-            print("run dual simplex method")
             A, b, c, v, B, N, z = d._AbcvBNz
-            print("A, b, c, v, B, N, z = d._AbcvBNz")
+            number_of_cut += 1
             if all(i.is_integer() for i in b):
                 break
-            number_of_cut += 1
-            print(number_of_cut)
-        print("The total number of cuts is ", number_of_cut)
+            
+        print 'The total number of cuts is ', number_of_cut
 
     def ELLUL(self, entering, leaving):
         r"""
@@ -3394,16 +3400,16 @@ class LPDictionary(LPAbstractDictionary):
             result.append(d.ELLUL(entering, leaving))
 
         if d.is_feasible():
-            result.append(r"\text{The initial dictionary is feasible")
+            result.append(r"\text{The primal dictionary is feasible")
         else:
-            result.append(r"\text{The initial dictionary is infeasible, "
+            result.append(r"\text{The primal dictionary is infeasible, "
               "so use the dual problem.}")
             while not d.is_optimal():
                 leaving, entering = min(d.possible_dual_simplex_method_steps())
-                if entering is None:
+                if entering:
                     step(min(entering), leaving)
                 else:
-                    d.is_optimal()  
+                    result.append(r"\text{The primal dictionary is unbounded.")
         v = d.objective_value()
         result.append((r"\text{{The optimal value: ${}$. "
                        "An optimal solution: ${}$.}}").format(
