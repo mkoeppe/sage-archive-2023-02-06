@@ -3055,7 +3055,7 @@ class LPDictionary(LPAbstractDictionary):
         m = A.nrows()
         n = A.ncols()
         if all(i.is_integer() for i in b):
-            raise ValueError("The dictionary is optimal. There is no way to add a cut.")
+            raise ValueError("The solution are all integer. There is no way to add a cut.")
         if basic_variable != None:
             basic_variable = variable(self.coordinate_ring(), basic_variable)
             choose_variable = basic_variable
@@ -3389,10 +3389,59 @@ class LPDictionary(LPAbstractDictionary):
             You can access the :meth:`final_dictionary`, which is
             an optimal dictionary for ``self``.
 
+        EXAMPLES::
+
+            sage: A = ([-1, 1], [8, 2])
+            sage: b = (2, 17)
+            sage: c = (4/7, 21/10)
+            sage: P = InteractiveLPProblemStandardForm(A, b, c)
+            sage: D = P.final_dictionary()
+            sage: D.add_a_cut()
+            sage: print(D.run_dual_simplex_method()) # not tested
+            \begin{gather*}
+            \allowdisplaybreaks
+            \renewcommand{\arraystretch}{1.5} \setlength{\arraycolsep}{0.125em}
+            \begin{array}{|rcrcrcr|}
+            \hline
+            x_{2} & = & 3 &  &  & - & x_{5}\\
+            x_{1} & = & \frac{11}{8} & - & \frac{1}{8} x_{4} & + & \frac{1}{4} x_{5}\\
+            x_{3} & = & \frac{3}{8} & - & \frac{1}{8} x_{4} & + & \frac{5}{4} x_{5}\\
+            \hline
+            z & = & \frac{248}{35} & - & \frac{1}{14} x_{4} & - & \frac{137}{70} x_{5}\\
+            \hline
+            \end{array}\displaybreak[0]\\
+            \text{The initial dictionary is feasible.}\displaybreak[0]\\
+            \text{The optimal value: $\frac{248}{35}$. An optimal solution: $\left(\frac{11}{8},\,3,\,\frac{3}{8},\,0,\,0\right)$.}
+            \end{gather*}
+            sage: A = ([-1/3, 5/7], [9/111, 13/17])
+            sage: b = (5/13, 19/27)
+            sage: c = (17/47, -23/53)
+            sage: P = InteractiveLPProblemStandardForm(A, b, c)
+            sage: D = P.final_dictionary()
+            sage: D.add_a_cut()
+            sage: D.run_dual_simplex_method()  # not tested
+
+        You should use the typeset mode as the command above generates long
+        `\LaTeX` code::
+
+            sage: print D.run_dual_simplex_method() # not tested
+            \begin{gather*}
+            ...
+            \text{The initial dictionary is infeasible, so use the dual simplex method.}\displaybreak[0]\\
+            ...
+            \text{Entering: $x_{2}$. Leaving: $x_{5}$.}\displaybreak[0]\\
+            ...
+            \text{The dual problem is unbounded in the $x_{1}$ direction.}\displaybreak[0]\\
+            ...
+            \text{The original problem is infeasible.}
+            ...
+            \end{gather*}
+
         """
         result = []
         d = self
         result.append(latex(d))
+
 
         def step(entering, leaving):
             result.append(r"\text{{Entering: ${}$. Leaving: ${}$.}}"
@@ -3400,35 +3449,40 @@ class LPDictionary(LPAbstractDictionary):
             result.append(d.ELLUL(entering, leaving))
 
         if d.is_feasible():
-            result.append(r"\text{The primal dictionary is feasible")
+            result.append(r"\text{The initial dictionary is feasible.}")
         else:
-            result.append(r"\text{The primal dictionary is infeasible, "
-              "so use the dual problem.}")
+            result.append(r"\text{The initial dictionary is infeasible, "
+              "so use the dual simplex method.}")
             while not d.is_optimal():
                 leaving, entering = min(d.possible_dual_simplex_method_steps())
                 if entering:
                     step(min(entering), leaving)
                 else:
-                    result.append(r"\text{The primal dictionary is unbounded.")
-        v = d.objective_value()
-        result.append((r"\text{{The optimal value: ${}$. "
-                       "An optimal solution: ${}$.}}").format(
-                       latex(v), latex(d.basic_solution())))
+                    d.leave(leaving)
+                    result.append(r"\text{{The dual problem is unbounded in the "
+                                  r"${}$ direction.}}".format(latex(leaving)))
+                    result.append(latex(d))
+                    result.append(r"\text{The original problem is infeasible.}")
+                    break
+        if d.is_optimal():
+            v = d.objective_value()
+            def basic_solution(d):
+                include_slack_variables = True
+                vv = zip(d.basic_variables(), d.constant_terms())
+                N = d.nonbasic_variables()
+                vv += [(v, 0) for v in N]
+                vv.sort()   # We use neglex order
+                v = [value for _, value in vv]
+                return vector(d.base_ring(),
+                      v if include_slack_variables else v[:len(N)])
+            result.append((r"\text{{The optimal value: ${}$. "
+                           "An optimal solution: ${}$.}}").format(
+                           latex(v), latex(basic_solution(d))))
         if generate_real_LaTeX:
             return ("\\begin{gather*}\n\\allowdisplaybreaks\n" +
                     "\\displaybreak[0]\\\\\n".join(result) +
                     "\n\\end{gather*}")
         return _assemble_arrayl(result, 1.5)
-
-    def transform_cut_dictionary(self):
-        #Under construction
-        A, b, c, v, B, N, z = self._AbcvBNz
-        P = InteractiveLPProblem(A, b, c, constraint_type="<=", problem_type="max")
-        
-        # DSF = D.standard_form()
-        # print(D)
-        # DSF_final_dictionary = DSF.final_dictionary()
-        return D
 
     def update(self):
         r"""
@@ -4341,6 +4395,14 @@ class LPRevisedDictionary(LPAbstractDictionary):
             True
         """
         return self._problem
+
+    def transform_cut_dictionary(self):
+        #Under construction
+        A, b, c, v, B, N, z = self._AbcvBNz
+        
+        # DSF = D.standard_form()
+        # print(D)
+        # DSF_final_dictionary = DSF.final_dictionary()
 
     def update(self):
         r"""
