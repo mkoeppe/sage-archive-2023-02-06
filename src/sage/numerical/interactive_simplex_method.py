@@ -2276,6 +2276,9 @@ class LPAbstractDictionary(SageObject):
         """
         return "LP problem dictionary (use typeset mode to see details)"
 
+    def add_row(self, ...):
+        raise NotImplementedError  ## to be implemented in LPDictionary and LPRevisedDictionary
+    
     def base_ring(self):
         r"""
         Return the base ring of ``self``, i.e. the ring of coefficients.
@@ -2343,6 +2346,14 @@ class LPAbstractDictionary(SageObject):
         v = [value for _, value in vv]
         return vector(self.base_ring(),
                       v if include_slack_variables else v[:len(N)])
+
+    def basic_variables():
+        """docstring"""
+        raise NotImplementedError
+
+    def constant_terms(self):
+        """docstring"""
+        raise NotImplementedError
 
     def coordinate_ring(self):
         r"""
@@ -2456,6 +2467,10 @@ class LPAbstractDictionary(SageObject):
             raise ValueError("entering variable must be non-basic")
         self._entering = v
 
+    def get_row(self):
+        raise NotImplementedError
+    ## to be implemented in both LPDictionary and LPRevisedDictionary
+        
     def is_dual_feasible(self):
         r"""
         Check if ``self`` is dual feasible.
@@ -3045,7 +3060,7 @@ class LPDictionary(LPAbstractDictionary):
 
         """
 
-        A, b, c, v, B, N, z = self._AbcvBNz
+        A, b, c, v, B, N, z = self._AbcvBNz                 # direct access -- replace this by using methods of LPAbstractDictionary
         m = A.nrows()
         n = A.ncols()
         if all(i.is_integer() for i in b):
@@ -3126,6 +3141,9 @@ class LPDictionary(LPAbstractDictionary):
             
         print 'The total number of cuts is ', number_of_cut
 
+    def add_row(self, ...):
+        ### do the stuff that you did above
+    
     def ELLUL(self, entering, leaving):
         r"""
         Perform the Enter-Leave-LaTeX-Update-LaTeX step sequence on ``self``.
@@ -3892,6 +3910,11 @@ class LPRevisedDictionary(LPAbstractDictionary):
         return column_matrix(self.problem().base_ring(),
                              [self.A(x) for x in self.x_N()])
 
+    def add_row(self, ...):
+        ### Transform to original variables
+        ### Add to the problem
+        ### Update the revised dictionary's basis
+    
     def B(self):
         r"""
         Return the `B` matrix, i.e. constraint coefficients of
