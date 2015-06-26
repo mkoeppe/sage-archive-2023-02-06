@@ -2198,6 +2198,7 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
                     "\n\\end{gather*}")
         return _assemble_arrayl(result, 1.5)
 
+
     def slack_variables(self):
         r"""
         Return slack variables of ``self``.
@@ -3005,7 +3006,7 @@ class LPDictionary(LPAbstractDictionary):
             lines[l] = line
         return  "\n".join(lines)
 
-    def add_a_cut(self, basic_variable=None):
+    def add_a_cut(self, basic_variable=None, new_slack_variable=None):
         r"""
 
         Update the dictionary by adding a Gomory fractional cut
@@ -3014,6 +3015,10 @@ class LPDictionary(LPAbstractDictionary):
 
         -``basic_variable`` -- (default: None) a string specifying
         the basic variable that will provide the source row for the cut. 
+        -``new_slack_variable`` --(default: None) a string giving
+        the name of the new_slack_variable. If the argument is none,
+        the new slack variable will be the prefix + "n" where n is 
+        the next index of variable list.
 
         OUTPUT:
         
@@ -3057,7 +3062,14 @@ class LPDictionary(LPAbstractDictionary):
         cut_nonbasic_coefficients = [ A[variable_index][i].floor() - 
                                       A[variable_index][i] for i in range (n)]
         cut_constant = b[variable_index].floor() - b[variable_index]
-        cut_index = m + n + 1
+        if new_slack_variable != None:
+            if not isinstance(new_slack_variable, str):
+                add_slack_variable = map(str, new_slack_variable)
+            else:
+                add_slack_variable = new_slack_variable
+        else:
+            cut_index = m + n + 1
+            add_slack_variable = SR("x" + str(cut_index))
 
         A = A.transpose()
         v = vector(QQ, n, cut_nonbasic_coefficients)
@@ -3066,16 +3078,16 @@ class LPDictionary(LPAbstractDictionary):
 
         l = list(b)
         l.append(cut_constant)
-        b = tuple(l)
+        b = vector(l)
 
         l = list(B)
-        l.append(SR("x" + str(cut_index)))
+        l.append(add_slack_variable)
         B = tuple(l)
 
-        #Construct a larger ring
+        #Construct a larger ring for variable
         R = B[0].parent()
         G = list(R.gens())
-        G.append(SR("x" + str(cut_index)))
+        G.append(add_slack_variable)
         R = PolynomialRing(QQ, G, order="neglex")
         #Update B and N to the larger ring
         B2 = vector([ R(x) for x in B])
@@ -3085,6 +3097,34 @@ class LPDictionary(LPAbstractDictionary):
         self._AbcvBNz[1] = b
         self._AbcvBNz[4] = B2
         self._AbcvBNz[5] = N2
+
+    def add_a_cutting_plane(self):
+        r"""
+
+        Perform the cutting plane method to solve a ILP or MIP problem.
+
+        EXAMPLES::
+
+            sage: A = ([-1, 1], [8, 2])
+            sage: b = (2, 17)
+            sage: c = (55/10, 21/10)
+            sage: P = InteractiveLPProblemStandardForm(A, b, c)
+            sage: D = P.final_dictionary()
+            sage: D.add_a_cutting_plane()
+            The total number of cuts is  5
+
+        """
+        d = self
+        number_of_cut = 0
+        while True:
+            d.add_a_cut()
+            d.run_dual_simplex_method()
+            A, b, c, v, B, N, z = d._AbcvBNz
+            number_of_cut += 1
+            if all(i.is_integer() for i in b):
+                break
+            
+        print 'The total number of cuts is ', number_of_cut
 
     def ELLUL(self, entering, leaving):
         r"""
@@ -3327,13 +3367,58 @@ class LPDictionary(LPAbstractDictionary):
             sage: D.objective_variable()
             z
         """
-        print self._objective_variable
+        print self._objective_variable  
 
-    def solve_added_a_cut_dictionary(self):
+    def run_dual_simplex_method(self):
+        r"""
+        Apply the dual simplex method to solve a dictionary with an added Gomory 
+        fractional cut and show the steps.
+
+        OUTPUT:
+
+        - a string with `\LaTeX` code of intermediate dictionaries
+
+        .. NOTE::
+
+            You can access the :meth:`final_dictionary`, which is
+            an optimal dictionary for ``self``.
+
+        """
+        result = []
+        d = self
+        result.append(latex(d))
+
+        def step(entering, leaving):
+            result.append(r"\text{{Entering: ${}$. Leaving: ${}$.}}"
+                          .format(latex(entering), latex(leaving)))
+            result.append(d.ELLUL(entering, leaving))
+
+        if d.is_feasible():
+            result.append(r"\text{The primal dictionary is feasible")
+        else:
+            result.append(r"\text{The primal dictionary is infeasible, "
+              "so use the dual problem.}")
+            while not d.is_optimal():
+                leaving, entering = min(d.possible_dual_simplex_method_steps())
+                if entering:
+                    step(min(entering), leaving)
+                else:
+                    result.append(r"\text{The primal dictionary is unbounded.")
+        v = d.objective_value()
+        result.append((r"\text{{The optimal value: ${}$. "
+                       "An optimal solution: ${}$.}}").format(
+                       latex(v), latex(d.basic_solution())))
+        if generate_real_LaTeX:
+            return ("\\begin{gather*}\n\\allowdisplaybreaks\n" +
+                    "\\displaybreak[0]\\\\\n".join(result) +
+                    "\n\\end{gather*}")
+        return _assemble_arrayl(result, 1.5)
+
+    def transform_cut_dictionary(self):
         #Under construction
         A, b, c, v, B, N, z = self._AbcvBNz
         P = InteractiveLPProblem(A, b, c, constraint_type="<=", problem_type="max")
-        D = P.dual()
+        
         # DSF = D.standard_form()
         # print(D)
         # DSF_final_dictionary = DSF.final_dictionary()
@@ -3576,8 +3661,8 @@ class LPRevisedDictionary(LPAbstractDictionary):
         elif style == None:        
             self._style = None
         else:
-            raise ValueError("For educational purposes, style must be \
-                initialized to vanderbei")
+            raise ValueError("Style must be one of None (the default) or \
+                'vanderbei'")
         self._objective_variable = objective_variable
         if problem.auxiliary_variable() == problem.decision_variables()[0]:
             raise ValueError("revised dictionaries should not be constructed "
