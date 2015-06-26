@@ -77,3 +77,12 @@ $RECYCLE.BIN/
 *.sage-chat
 *.sage-history
 *.syncdoc*
+vanderbei_style_test.sage
+
+vanderbei_style_test.sage
+
+test_add_a_cut.sage
+
+diff.txt
+
+local/lib/python2.7/site-packages/sage/numerical/interactive_simplex_method.py
