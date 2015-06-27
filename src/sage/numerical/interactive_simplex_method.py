@@ -1480,6 +1480,7 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
         sage: c = (10, 5)
         sage: P = InteractiveLPProblemStandardForm(A, b, c)
 
+
     Unlike :class:`InteractiveLPProblem`, this class does not allow you to adjust types of
     constraints (they are always ``"<="``) and variables (they are always
     ``">="``), and the problem type may only be ``"max"`` or ``"-max"``.
@@ -2193,6 +2194,7 @@ class InteractiveLPProblemStandardForm(InteractiveLPProblem):
                     "\\displaybreak[0]\\\\\n".join(result) +
                     "\n\\end{gather*}")
         return _assemble_arrayl(result, 1.5)
+
 
     def slack_variables(self):
         r"""
@@ -3010,6 +3012,126 @@ class LPDictionary(LPAbstractDictionary):
             lines[l] = line
         return  "\n".join(lines)
 
+    def add_a_cut(self, basic_variable=None, new_slack_variable=None):
+        r"""
+
+        Update the dictionary by adding a Gomory fractional cut
+
+        INPUT:
+
+        -``basic_variable`` -- (default: None) a string specifying
+        the basic variable that will provide the source row for the cut.
+        -``new_slack_variable`` --(default: None) a string giving
+        the name of the new_slack_variable. If the argument is none,
+        the new slack variable will be the prefix + "n" where n is
+        the next index of variable list.
+
+        OUTPUT:
+
+        -none, but the dictionary will be updated with an additional
+        row that is constructed from a Gomory fractional cut, while the
+        source row can be chosen by the user or picked by the most
+        fractional basic variable
+
+        TESTS::
+
+            sage: A = ([-1, 1], [8, 2])
+            sage: b = (2, 17)
+            sage: c = (5.5, 2.1)
+            sage: P = InteractiveLPProblemStandardForm(A, b, c)
+            sage: D = P.final_dictionary()
+            sage: D.add_a_cut()
+            sage: D.basic_variables()
+            (x2, x1, x5)
+            sage: D.leave(5)
+            sage: D.leaving_coefficients()
+            (-1/10, -4/5)
+            sage: D.constant_terms()
+            (3.30000000000000, 1.30000000000000, -0.300000000000000)
+
+        """
+
+        A, b, c, v, B, N, z = self._AbcvBNz
+        m = A.nrows()
+        n = A.ncols()
+        if all(i.is_integer() for i in b):
+            raise ValueError("The solution are all integer. There is no way to add a cut.")
+        if basic_variable != None:
+            basic_variable = variable(self.coordinate_ring(), basic_variable)
+            choose_variable = basic_variable
+            variable_index = list(B).index(choose_variable)
+        else:
+            variable_list = [abs(b[i]- b[i].floor() - 0.5) for i in range (m)]
+            variable_index = variable_list.index(min(variable_list))
+            choose_variable = B[variable_index]
+
+        cut_nonbasic_coefficients = [ A[variable_index][i].floor() -
+                                      A[variable_index][i] for i in range (n)]
+        cut_constant = b[variable_index].floor() - b[variable_index]
+        if new_slack_variable != None:
+            if not isinstance(new_slack_variable, str):
+                add_slack_variable = map(str, new_slack_variable)
+            else:
+                add_slack_variable = new_slack_variable
+        else:
+            cut_index = m + n + 1
+            add_slack_variable = SR("x" + str(cut_index))
+
+        A = A.transpose()
+        v = vector(QQ, n, cut_nonbasic_coefficients)
+        A = A.augment(v)
+        A = A.transpose()
+
+        l = list(b)
+        l.append(cut_constant)
+        b = vector(l)
+
+        l = list(B)
+        l.append(add_slack_variable)
+        B = tuple(l)
+
+        #Construct a larger ring for variable
+        R = B[0].parent()
+        G = list(R.gens())
+        G.append(add_slack_variable)
+        R = PolynomialRing(QQ, G, order="neglex")
+        #Update B and N to the larger ring
+        B2 = vector([ R(x) for x in B])
+        N2 = vector([ R(x) for x in N])
+
+        self._AbcvBNz[0] = matrix(QQ, A)
+        self._AbcvBNz[1] = b
+        self._AbcvBNz[4] = B2
+        self._AbcvBNz[5] = N2
+
+    def add_a_cutting_plane(self):
+        r"""
+
+        Perform the cutting plane method to solve a ILP or MIP problem.
+
+        EXAMPLES::
+
+            sage: A = ([-1, 1], [8, 2])
+            sage: b = (2, 17)
+            sage: c = (55/10, 21/10)
+            sage: P = InteractiveLPProblemStandardForm(A, b, c)
+            sage: D = P.final_dictionary()
+            sage: D.add_a_cutting_plane()
+            The total number of cuts is  5
+
+        """
+        d = self
+        number_of_cut = 0
+        while True:
+            d.add_a_cut()
+            d.run_dual_simplex_method()
+            A, b, c, v, B, N, z = d._AbcvBNz
+            number_of_cut += 1
+            if all(i.is_integer() for i in b):
+                break
+
+        print 'The total number of cuts is ', number_of_cut
+
     def ELLUL(self, entering, leaving):
         r"""
         Perform the Enter-Leave-LaTeX-Update-LaTeX step sequence on ``self``.
@@ -3252,6 +3374,115 @@ class LPDictionary(LPAbstractDictionary):
             z
         """
         print self._objective_variable
+
+    def run_dual_simplex_method(self):
+        r"""
+        Apply the dual simplex method to solve a dictionary with an added Gomory
+        fractional cut and show the steps.
+
+        OUTPUT:
+
+        - a string with `\LaTeX` code of intermediate dictionaries
+
+        .. NOTE::
+
+            You can access the :meth:`final_dictionary`, which is
+            an optimal dictionary for ``self``.
+
+        EXAMPLES::
+
+            sage: A = ([-1, 1], [8, 2])
+            sage: b = (2, 17)
+            sage: c = (4/7, 21/10)
+            sage: P = InteractiveLPProblemStandardForm(A, b, c)
+            sage: D = P.final_dictionary()
+            sage: D.add_a_cut()
+            sage: print(D.run_dual_simplex_method()) # not tested
+            \begin{gather*}
+            \allowdisplaybreaks
+            \renewcommand{\arraystretch}{1.5} \setlength{\arraycolsep}{0.125em}
+            \begin{array}{|rcrcrcr|}
+            \hline
+            x_{2} & = & 3 &  &  & - & x_{5}\\
+            x_{1} & = & \frac{11}{8} & - & \frac{1}{8} x_{4} & + & \frac{1}{4} x_{5}\\
+            x_{3} & = & \frac{3}{8} & - & \frac{1}{8} x_{4} & + & \frac{5}{4} x_{5}\\
+            \hline
+            z & = & \frac{248}{35} & - & \frac{1}{14} x_{4} & - & \frac{137}{70} x_{5}\\
+            \hline
+            \end{array}\displaybreak[0]\\
+            \text{The initial dictionary is feasible.}\displaybreak[0]\\
+            \text{The optimal value: $\frac{248}{35}$. An optimal solution: $\left(\frac{11}{8},\,3,\,\frac{3}{8},\,0,\,0\right)$.}
+            \end{gather*}
+            sage: A = ([-1/3, 5/7], [9/111, 13/17])
+            sage: b = (5/13, 19/27)
+            sage: c = (17/47, -23/53)
+            sage: P = InteractiveLPProblemStandardForm(A, b, c)
+            sage: D = P.final_dictionary()
+            sage: D.add_a_cut()
+            sage: D.run_dual_simplex_method()  # not tested
+
+        You should use the typeset mode as the command above generates long
+        `\LaTeX` code::
+
+            sage: print D.run_dual_simplex_method() # not tested
+            \begin{gather*}
+            ...
+            \text{The initial dictionary is infeasible, so use the dual simplex method.}\displaybreak[0]\\
+            ...
+            \text{Entering: $x_{2}$. Leaving: $x_{5}$.}\displaybreak[0]\\
+            ...
+            \text{The dual problem is unbounded in the $x_{1}$ direction.}\displaybreak[0]\\
+            ...
+            \text{The original problem is infeasible.}
+            ...
+            \end{gather*}
+
+        """
+        result = []
+        d = self
+        result.append(latex(d))
+
+
+        def step(entering, leaving):
+            result.append(r"\text{{Entering: ${}$. Leaving: ${}$.}}"
+                          .format(latex(entering), latex(leaving)))
+            result.append(d.ELLUL(entering, leaving))
+
+        if d.is_feasible():
+            result.append(r"\text{The initial dictionary is feasible.}")
+        else:
+            result.append(r"\text{The initial dictionary is infeasible, "
+              "so use the dual simplex method.}")
+            while not d.is_optimal():
+                leaving, entering = min(d.possible_dual_simplex_method_steps())
+                if entering:
+                    step(min(entering), leaving)
+                else:
+                    d.leave(leaving)
+                    result.append(r"\text{{The dual problem is unbounded in the "
+                                  r"${}$ direction.}}".format(latex(leaving)))
+                    result.append(latex(d))
+                    result.append(r"\text{The original problem is infeasible.}")
+                    break
+        if d.is_optimal():
+            v = d.objective_value()
+            def basic_solution(d):
+                include_slack_variables = True
+                vv = zip(d.basic_variables(), d.constant_terms())
+                N = d.nonbasic_variables()
+                vv += [(v, 0) for v in N]
+                vv.sort()   # We use neglex order
+                v = [value for _, value in vv]
+                return vector(d.base_ring(),
+                      v if include_slack_variables else v[:len(N)])
+            result.append((r"\text{{The optimal value: ${}$. "
+                           "An optimal solution: ${}$.}}").format(
+                           latex(v), latex(basic_solution(d))))
+        if generate_real_LaTeX:
+            return ("\\begin{gather*}\n\\allowdisplaybreaks\n" +
+                    "\\displaybreak[0]\\\\\n".join(result) +
+                    "\n\\end{gather*}")
+        return _assemble_arrayl(result, 1.5)
 
     def update(self):
         r"""
@@ -4164,6 +4395,14 @@ class LPRevisedDictionary(LPAbstractDictionary):
             True
         """
         return self._problem
+
+    def transform_cut_dictionary(self):
+        #Under construction
+        A, b, c, v, B, N, z = self._AbcvBNz
+
+        # DSF = D.standard_form()
+        # print(D)
+        # DSF_final_dictionary = DSF.final_dictionary()
 
     def update(self):
         r"""
