@@ -2363,6 +2363,32 @@ cdef class MixedIntegerLinearProgram(SageObject):
         """
         return self._backend
 
+    def get_variables(self):
+        r"""
+        Returns a list of the variables used in the problem.
+
+        Elements in the returned list can be used in set functions in the class.  
+
+        EXAMPLE:
+
+        This example change all variables in a given problem to binary variables::
+
+            sage: p = MixedIntegerLinearProgram(solver="GLPK")
+            sage: x = p.new_variable(integer=True, nonnegative=True)
+            sage: p.add_constraint( -x[0] + x[1] <= 2 )
+            sage: for v in p.get_variables():
+            ....:     p.set_binary(v)
+            sage: p.show()
+            Maximization:
+            Constraints:
+              - x_0 + x_1 <= 2.0
+            Variables:
+              x_0 is a boolean variable (min=0.0, max=1.0)
+              x_1 is a boolean variable (min=0.0, max=1.0)
+        """
+        return [k for k in self._variables.keys()]
+
+            raise ValueError('Form of construct_interactiveLPProblem() is either \'None\' or \'standard\'')
 
 class MIPSolverException(RuntimeError):
     r"""
