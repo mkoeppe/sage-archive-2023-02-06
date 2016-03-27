@@ -37,11 +37,13 @@ cdef class InteractiveLPBackend:
         This backend can work with irrational algebraic numbers::
 
             sage: poly = polytopes.dodecahedron(base_ring=AA)
-            sage: lp = poly.to_linear_program(solver='InteractiveLP')
+            sage: lp, x = poly.to_linear_program(solver='InteractiveLP', return_variable=True)
             sage: b = lp.get_backend()
             sage: b.set_objective([1, 1, 1])
             sage: lp.solve()
             2.291796067500631?
+            sage: lp.get_values(x)
+            [0.763932022500211?, 0.763932022500211?, 0.763932022500211?]
         """
 
         self.lp = InteractiveLPProblem([], [], [], base_ring=self.base_ring())
