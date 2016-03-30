@@ -25,7 +25,7 @@ from sage.modules.all import vector
 
 cdef class InteractiveLPBackend:
 
-    def __cinit__(self, maximization = True):
+    def __cinit__(self, maximization = True, base_ring = None):
         """
         Cython constructor
 
@@ -46,7 +46,11 @@ cdef class InteractiveLPBackend:
             [0.763932022500211?, 0.763932022500211?, 0.763932022500211?]
         """
 
-        self.lp = InteractiveLPProblem([], [], [], base_ring=self.base_ring())
+        if base_ring is None:
+            from sage.rings.all import AA
+            base_ring = AA
+
+        self.lp = InteractiveLPProblem([], [], [], base_ring=base_ring)
         self.set_verbosity(0)
 
         if maximization:
@@ -59,24 +63,68 @@ cdef class InteractiveLPBackend:
         self.row_names = []
 
     cpdef base_ring(self):
-        from sage.rings.all import AA  #### FIXME ---- Would rather have this as a parameter...
-        return AA
+        """
+        Return the base ring.
+
+        OUTPUT:
+
+        A ring. The coefficients that the chosen solver supports.
+
+        EXAMPLES::
+
+            sage: from sage.numerical.backends.generic_backend import get_solver
+            sage: p = get_solver(solver = "InteractiveLP")
+            sage: p.base_ring()
+            Algebraic Real Field
+        """
+        return self.lp.base_ring()
 
     def _variable_type_from_bounds(self, lower_bound, upper_bound):
+        """
+        Return a string designating a variable type in `InteractiveLPProblem`.
+
+        INPUT:
+
+        - ``lower_bound`` - the lower bound of the variable
+
+        - ``upper_bound`` - the upper bound of the variable
+
+        OUTPUT:
+
+        - a string, one of "", "<=", ">="
+
+        The function raises an error if this pair of bounds cannot be
+        represented by an `InteractiveLPProblem` variable type.
+
+        EXAMPLE::
+
+            sage: from sage.numerical.backends.generic_backend import get_solver
+            sage: p = get_solver(solver = "InteractiveLP")
+            sage: p._variable_type_from_bounds(0, None)
+            '>='
+            sage: p._variable_type_from_bounds(None, 0)
+            '<='
+            sage: p._variable_type_from_bounds(None, None)
+            ''
+            sage: p._variable_type_from_bounds(None, 5)
+            Traceback (most recent call last):
+            ...
+            NotImplementedError: General variable bounds not supported
+        """
         if lower_bound is None:
             if upper_bound is None:
                 return ""
             elif upper_bound == 0:
                 return "<="
             else:
-                raise NotImplementedError, "General variable bounds not supported"
+                raise NotImplementedError("General variable bounds not supported")
         elif lower_bound == 0:
             if upper_bound is None:
                 return ">="
             else:
-                raise NotImplementedError, "General variable bounds not supported"
+                raise NotImplementedError("General variable bounds not supported")
         else:
-            raise NotImplementedError, "General variable bounds not supported"
+            raise NotImplementedError("General variable bounds not supported")
 
     cpdef int add_variable(self, lower_bound=0, upper_bound=None,
                            binary=False, continuous=True, integer=False,
@@ -139,7 +187,7 @@ cdef class InteractiveLPBackend:
         elif vtype != 1:
             raise ValueError("Exactly one parameter of 'binary', 'integer' and 'continuous' must be 'True'.")
         if not continuous:
-            raise NotImplementedError, "Integer variables are not supported"
+            raise NotImplementedError("Integer variables are not supported")
         variable_types = variable_types + (self._variable_type_from_bounds(lower_bound, upper_bound),)
         col = vector(ring, self.nrows())
         if coefficients is not None:
@@ -427,7 +475,7 @@ cdef class InteractiveLPBackend:
         A, b, c, x, constraint_types, variable_types, problem_type, ring = self._AbcxCVPR()
         if lower_bound is None:
            if upper_bound is None:
-               raise ValueError, "At least one of lower_bound and upper_bound must be provided"
+               raise ValueError("At least one of lower_bound and upper_bound must be provided")
            else:
                constraint_types = constraint_types + ("<=",)
                b = tuple(b) + (upper_bound,)
@@ -439,7 +487,7 @@ cdef class InteractiveLPBackend:
                 constraint_types = constraint_types + ("==",)
                 b = tuple(b) + (lower_bound,)
             else:
-                raise NotImplementedError, "Ranged constraints are not supported"
+                raise NotImplementedError("Ranged constraints are not supported")
 
         row = vector(ring, self.ncols())
         for (i, v) in coefficients:
@@ -552,11 +600,11 @@ cdef class InteractiveLPBackend:
         d = self.final_dictionary = lp_std_form.final_revised_dictionary()
         if d.is_optimal():
             if lp_std_form.auxiliary_variable() in d.basic_variables():
-                raise MIPSolverException, "InteractiveLP: Problem has no feasible solution"
+                raise MIPSolverException("InteractiveLP: Problem has no feasible solution")
             else:
                 return 0
         else:
-            raise MIPSolverException, "InteractiveLP: Problem is unbounded"
+            raise MIPSolverException("InteractiveLP: Problem is unbounded")
 
     cpdef get_objective_value(self):
         """
@@ -615,7 +663,7 @@ cdef class InteractiveLPBackend:
             3/2
         """
         if str(self.lp.decision_variables()[variable]) != str(self.lp_std_form.decision_variables()[variable]):
-            raise NotImplementedError, "Undoing the standard-form transformation is not implemented"
+            raise NotImplementedError("Undoing the standard-form transformation is not implemented")
         return self.final_dictionary.basic_solution()[variable]
 
     cpdef int ncols(self):
@@ -689,7 +737,6 @@ cdef class InteractiveLPBackend:
                 return self.prob_name
             else:
                 return ""
-            return self.prob_name
         else:
             self.prob_name = str(name)
 
@@ -800,7 +847,7 @@ cdef class InteractiveLPBackend:
         elif constraint_types[index] == '==':
             return (b[index], b[index])
         else:
-            raise ValueError, "Bad constraint_type"
+            raise ValueError("Bad constraint_type")
 
     cpdef col_bounds(self, int index):
         """

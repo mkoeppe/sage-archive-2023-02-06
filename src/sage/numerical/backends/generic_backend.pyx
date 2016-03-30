@@ -270,7 +270,7 @@ cdef class GenericBackend:
 
         EXAMPLE::
 
-            sage: p = MixedIntegerLinearProgram(solver="Nonexistent_LP_solver")
+            sage: p = MixedIntegerLinearProgram(solver="Nonexistent_LP_solver")  # optional - Nonexistent_LP_solver
             sage: v = p.new_variable(nonnegative=True)         # optional - Nonexistent_LP_solver
             sage: x,y = v[0], v[1]                             # optional - Nonexistent_LP_solver
             sage: p.add_constraint(2*x + 3*y, max = 6)         # optional - Nonexistent_LP_solver
@@ -1132,14 +1132,20 @@ def default_mip_solver(solver = None):
         - CVXOPT (``solver="CVXOPT"``). See the `CVXOPT
           <http://cvxopt.org/>`_ web site.
 
-        - PPL (``solver="PPL"``). See the `PPL
-          <http://bugseng.com/products/ppl/>`_ web site.
-
         - Gurobi (``solver="Gurobi"``). See the `Gurobi
           <http://www.gurobi.com/>`_ web site.
 
+        - PPL (``solver="PPL"``). See the `PPL
+          <http://bugseng.com/products/ppl/>`_ web site. This solver is
+          an exact rational solver.
+
+        - ``InteractiveLPProblem`` (``solver="InteractiveLP"``).  A didactical
+          implementation of the revised simplex method in Sage.  It works over
+          any exact ordered field, the default is ``AA``.
+
         ``solver`` should then be equal to one of ``"GLPK"``,
-        ``"Coin"``, ``"CPLEX"``,  ``"CVXOPT"``, ``"Gurobi"`` or ``"PPL"`` .
+        ``"Coin"``, ``"CPLEX"``,  ``"CVXOPT"``, ``"Gurobi"``, ``"PPL"`, or
+        ``"InteractiveLP"``,
 
         - If ``solver=None`` (default), the current default solver's name is
           returned.
@@ -1167,7 +1173,7 @@ def default_mip_solver(solver = None):
         sage: default_mip_solver("Yeahhhhhhhhhhh")
         Traceback (most recent call last):
         ...
-        ValueError: 'solver' should be set to 'GLPK', 'Coin', 'CPLEX', 'Gurobi', 'CVXOPT', 'PPL' or None.
+        ValueError: 'solver' should be set to ...
         sage: default_mip_solver(former_solver)
     """
     global default_solver
@@ -1225,16 +1231,19 @@ def default_mip_solver(solver = None):
     elif solver == "Glpk":
         default_solver = solver
 
-    else:
-        raise ValueError("'solver' should be set to 'GLPK', 'Coin', 'CPLEX', 'Gurobi', 'CVXOPT', 'PPL' or None.")
+    elif solver == "Interactivelp":
+        default_solver = solver
 
-cpdef GenericBackend get_solver(constraint_generation = False, solver = None):
+    else:
+        raise ValueError("'solver' should be set to 'GLPK', 'Coin', 'CPLEX', 'CVXOPT', 'Gurobi', 'PPL', 'InteractiveLP', or None.")
+
+cpdef GenericBackend get_solver(constraint_generation = False, solver = None, base_ring = None):
     """
     Return a solver according to the given preferences
 
     INPUT:
 
-    - ``solver`` -- 6 solvers should be available through this class:
+    - ``solver`` -- 7 solvers should be available through this class:
 
         - GLPK (``solver="GLPK"``). See the `GLPK
           <http://www.gnu.org/software/glpk/>`_ web site.
@@ -1252,11 +1261,19 @@ cpdef GenericBackend get_solver(constraint_generation = False, solver = None):
           <http://www.gurobi.com/>`_ web site.
 
         - PPL (``solver="PPL"``). See the `PPL
-          <http://bugseng.com/products/ppl/>`_ web site.
+          <http://bugseng.com/products/ppl/>`_ web site.  This solver is
+          an exact rational solver.
+
+        - ``InteractiveLPProblem`` (``solver="InteractiveLP"``).  A didactical
+          implementation of the revised simplex method in Sage.  It works over
+          any exact ordered field, the default is ``AA``.
 
         ``solver`` should then be equal to one of ``"GLPK"``, ``"Coin"``,
-        ``"CPLEX"``, ``"CVXOPT"``,``"Gurobi"``, ``"PPL"``, or ``None``. If ``solver=None`` (default),
-        the default solver is used (see ``default_mip_solver`` method.
+        ``"CPLEX"``, ``"CVXOPT"``,``"Gurobi"``, ``"PPL"``, ``"InteractiveLP"``,
+        or ``None``. If ``solver=None`` (default),
+        the default solver is used (see ``default_mip_solver`` method).
+
+    - ``base_ring`` -- Request a solver that works over this field.
 
     - ``constraint_generation`` -- Only used when ``solver=None``.
 
@@ -1271,13 +1288,39 @@ cpdef GenericBackend get_solver(constraint_generation = False, solver = None):
 
         - :func:`default_mip_solver` -- Returns/Sets the default MIP solver.
 
-    EXAMPLE::
+    EXAMPLES::
 
         sage: from sage.numerical.backends.generic_backend import get_solver
         sage: p = get_solver()
+        sage: p = get_solver(base_ring=RDF)
+        sage: p.base_ring()
+        Real Double Field
+        sage: p = get_solver(base_ring=QQ); p
+        <sage.numerical.backends.ppl_backend.PPLBackend object at ...>
+        sage: p.base_ring()
+        Rational Field
+        sage: p = get_solver(base_ring=AA); p
+        <sage.numerical.backends.interactivelp_backend.InteractiveLPBackend object at ...>
+        sage: p.base_ring()
+        Algebraic Real Field
+        sage: d = polytopes.dodecahedron()
+        sage: p = get_solver(base_ring=d.base_ring()); p
+        <sage.numerical.backends.interactivelp_backend.InteractiveLPBackend object at ...>
+        sage: p.base_ring()
+        Number Field in sqrt5 with defining polynomial x^2 - 5
     """
     if solver is None:
+
         solver = default_mip_solver()
+
+        if base_ring is not None:
+            from sage.rings.all import QQ, RDF
+            if base_ring is QQ:
+                solver = "Ppl"
+            elif solver in ["Interactivelp", "Ppl"] and not base_ring.is_exact():
+                solver = "Glpk"
+            elif base_ring is not RDF:
+                solver = "Interactivelp"
 
         # We do not want to use Coin for constraint_generation. It just does not
         # work
@@ -1313,7 +1356,7 @@ cpdef GenericBackend get_solver(constraint_generation = False, solver = None):
 
     elif solver == "Interactivelp":
         from sage.numerical.backends.interactivelp_backend import InteractiveLPBackend
-        return InteractiveLPBackend()
+        return InteractiveLPBackend(base_ring=base_ring)
 
     else:
         raise ValueError("'solver' should be set to 'GLPK', 'Coin', 'CPLEX', 'CVXOPT', 'Gurobi', 'PPL', 'InteractiveLP', or None (in which case the default one is used).")
