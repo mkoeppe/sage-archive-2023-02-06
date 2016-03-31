@@ -62,6 +62,9 @@ cdef class InteractiveLPBackend:
         else:
             self.set_sense(-1)
 
+        ## FIXME: Need to assign this because MixedIntegerLinearProgram.show() accesses it directly.
+        self.obj_constant_term = 0
+
         self.row_names = []
 
     cpdef base_ring(self):
@@ -389,6 +392,7 @@ cdef class InteractiveLPBackend:
         """
         A, b, _, x, constraint_types, variable_types, problem_type, ring, _ = self._AbcxCVPRd()
         c = coeff
+        self.obj_constant_term = d
         self.lp = InteractiveLPProblem(A, b, c, x,
                                        constraint_types, variable_types,
                                        problem_type, ring, objective_constant_term=d)
@@ -638,7 +642,7 @@ cdef class InteractiveLPBackend:
         v = d.objective_value()
         if self.lp_std_form.is_negative():
             v = - v
-        return v
+        return self.obj_constant_term + v
 
     cpdef get_variable_value(self, int variable):
         """
