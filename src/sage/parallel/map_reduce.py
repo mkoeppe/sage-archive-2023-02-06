@@ -482,7 +482,7 @@ Yes ! Here, there are:
 Tests
 -----
 
-Generating series for sum of strictly decreassing list of integer smaller than
+Generating series for sum of strictly decreasing list of integer smaller than
 15::
 
     sage: y = polygen(ZZ, 'y')
@@ -558,7 +558,7 @@ def proc_number(max_proc = None):
     if max_proc is None:
         return max(cpu_count(), 1)
     else:
-        return min(max_proc, max(cpu_count(), 1))
+        return min(max_proc, max(cpu_count(), 2))
 
 
 class AbortError(Exception):

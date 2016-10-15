@@ -13,6 +13,9 @@ Classes for symbolic functions
 # (at your option) any later version.
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
+from __future__ import division
+
+from six import itervalues
 
 from .ginac cimport *
 
@@ -663,7 +666,7 @@ cdef class Function(SageObject):
             sage: ff = erf._fast_float_()
             sage: ff.is_pure_c()
             False
-            sage: ff(1.5)
+            sage: ff(1.5) # tol 1e-15
             0.9661051464753108
             sage: erf(1.5)
             0.966105146475311
@@ -704,7 +707,7 @@ cdef class Function(SageObject):
             sage: import numpy
             sage: a = numpy.arange(5)
             sage: csc(a)
-            doctest:...: RuntimeWarning: divide by zero encountered in divide
+            doctest:...: RuntimeWarning: divide by zero encountered in ...divide
             array([        inf,  1.18839511,  1.09975017,  7.0861674 , -1.32134871])
 
             sage: factorial(a)
@@ -915,7 +918,7 @@ cdef class BuiltinFunction(Function):
             6.0
             sage: assert type(_) is float
 
-            sage: cos(1jr)
+            sage: cos(1jr)  # abstol 1e-15
             (1.5430806348152437-0j)
             sage: assert type(_) is complex
 
@@ -1154,7 +1157,7 @@ cdef class SymbolicFunction(Function):
         # see if there is already an SFunction with the same state
         cdef Function sfunc
         cdef long myhash = self._hash_()
-        for sfunc in sfunction_serial_dict.itervalues():
+        for sfunc in itervalues(sfunction_serial_dict):
             if isinstance(sfunc, SymbolicFunction) and \
                     myhash == (<SymbolicFunction>sfunc)._hash_():
                 # found one, set self._serial to be a copy
