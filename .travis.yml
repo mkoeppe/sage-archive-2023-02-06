@@ -10,11 +10,16 @@ matrix:
       compiler: clang
     - os: linux
       compiler: gcc
+    - os: linux
+      sudo: required
+      dist: trusty
+      compiler: gcc
 
 cache: ccache
 
 before_install:
   - brew update || true
+  - (apt-get update -qq && apt-get install -y pv wget build-essential gfortran automake m4 dpkg-dev sudo python libssl-dev git texlive-latex-recommended) || true
 
 install:
   - brew install pv || true
