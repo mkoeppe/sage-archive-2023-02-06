@@ -10,5 +10,6 @@ function finish {
 
 trap finish EXIT
 
-export MAKE="make -j2"
-make V=0
+export MAKE="make -j4"
+
+make V=0 SAGE_SPKG="travis_wait 120 sage-spkg"
