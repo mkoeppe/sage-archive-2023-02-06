@@ -11,4 +11,6 @@ osx_image:
 compiler:
   - clang
 
-script: ./.travis-build.sh
+install:
+  - export -f travis_wait
+  - ./.travis-build.sh
