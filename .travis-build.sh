@@ -8,10 +8,23 @@ function finish {
     done
 }
 
-trap finish EXIT
+#trap finish EXIT
 
 export MAKE="make -j4"
 
 export SAGE_INSTALL_CCACHE=yes
 
-make V=0 SAGE_PV="pv --timer --interval 60 --line-mode"
+function hungry_spinner {
+    function kill_spinner {
+	kill $SPINNER_PID
+    }
+    trap kill_spinner EXIT 
+    trap kill_spinner SIGPIPE 
+    trap kill_spinner SIGINT 
+    ( sleep 6; while true; do echo -n . >/dev/tty ; sleep 6; done ) &
+    SPINNER_PID=$!
+    cat
+};
+export -f hungry_spinner
+
+make V=0 SAGE_PV="hungry_spinner"
