@@ -1,21 +1,21 @@
 language: cpp
 
-os:
-  - osx
-  - linux
-
-osx_image:
-  - xcode8
-  - xcode7.1
-
-compiler:
-  - clang
+matrix:
+  include:
+    - os: osx
+      osx_image: xcode8
+      compiler: clang
+    - os: osx
+      osx_image: xcode7.1
+      compiler: clang
+    - os: linux
+      compiler: gcc
 
 cache: ccache
 
 before_install:
-  - brew update
+  - brew update || true
 
 install:
-  - brew install pv
+  - brew install pv || true
   - ./.travis-build.sh
