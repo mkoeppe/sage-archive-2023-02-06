@@ -12,4 +12,4 @@ trap finish EXIT
 
 export MAKE="make -j4"
 
-make V=0 SAGE_SPKG="travis_wait 120 sage-spkg"
+make V=0 SAGE_PV="pv --timer --interval 60 --line-mode"
