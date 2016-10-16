@@ -12,4 +12,6 @@ trap finish EXIT
 
 export MAKE="make -j4"
 
+export SAGE_INSTALL_CCACHE=yes
+
 make V=0 SAGE_PV="pv --timer --interval 60 --line-mode"

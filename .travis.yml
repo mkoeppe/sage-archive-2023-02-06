@@ -11,6 +11,8 @@ osx_image:
 compiler:
   - clang
 
+cache: ccache
+
 before_install:
   - brew update
 
