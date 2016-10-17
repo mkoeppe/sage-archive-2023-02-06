@@ -27,4 +27,5 @@ function hungry_spinner {
 };
 export -f hungry_spinner
 
-make V=0 SAGE_PV="hungry_spinner"
+make V=0 SAGE_PV="hungry_spinner" $TARGET
+

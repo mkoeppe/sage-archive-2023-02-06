@@ -17,9 +17,11 @@ matrix:
 
 cache: ccache
 
+env:
+  - TARGET=givaro
+
 addons:
   apt_packages:
-      - pv
       - wget
       - build-essential
       - gfortran
@@ -35,5 +37,4 @@ before_install:
   - brew update || true
 
 install:
-  - brew install pv || true
   - ./.travis-build.sh
