@@ -14,5 +14,5 @@ export MAKE="make -j4"
 
 export SAGE_INSTALL_CCACHE=yes
 
-make V=0 SAGE_PV="PYTHONUNBUFFERED=1 sage-progress-meter" $TARGET
+make V=0 SAGE_PV="env PYTHONUNBUFFERED=1 sage-progress-meter" $TARGET
 
