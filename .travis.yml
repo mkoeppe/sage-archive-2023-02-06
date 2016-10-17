@@ -18,7 +18,7 @@ matrix:
 cache: ccache
 
 env:
-  - TARGET=givaro
+  - TARGETS="givaro"
 
 addons:
   apt_packages:
@@ -38,3 +38,5 @@ before_install:
 
 install:
   - ./.travis-build.sh
+
+script: true

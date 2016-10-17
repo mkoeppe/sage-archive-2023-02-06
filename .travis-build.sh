@@ -16,5 +16,5 @@ export SAGE_INSTALL_CCACHE=yes
 
 export V=0
 export SAGE_PV="env PYTHONUNBUFFERED=1 sage-progress-meter"
-make all-toolchain && make $TARGET
+make all-toolchain && make $TARGETS
 
