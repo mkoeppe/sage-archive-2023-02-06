@@ -10,7 +10,7 @@ function finish {
 
 #trap finish EXIT
 
-export MAKE="make -j4"
+export MAKE="make -j16"
 
 export SAGE_INSTALL_CCACHE=yes
 
