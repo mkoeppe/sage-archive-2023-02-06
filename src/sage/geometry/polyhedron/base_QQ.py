@@ -156,7 +156,7 @@ class Polyhedron_QQ(Polyhedron_base):
             ....:     lp.add_constraint(lp.sum(fibonacci(i+3)*x[i] for i in range(d)) <= b)
             ....:     return lp.polyhedron(backend=backend)
             sage: fibonacci_knapsack(20, 12).integral_points_count() # does not finish with preprocess=False
-            134
+            33
 
         TESTS:
 
