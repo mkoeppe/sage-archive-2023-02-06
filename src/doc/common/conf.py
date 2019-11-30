@@ -1,5 +1,5 @@
 import sys, os, sphinx
-from sage.env import SAGE_DOC_SRC, SAGE_DOC, SAGE_SRC, THEBE_DIR, SAGE_SHARE
+from sage.env import SAGE_DOC_SRC, SAGE_DOC, SAGE_SRC, THEBE_DIR, PPLPY_DOCS, SAGE_SHARE
 import sage.version
 from sage.misc.sagedoc import extlinks
 import dateutil.parser
@@ -197,7 +197,7 @@ intersphinx_mapping = {
     'python': ('https://docs.python.org/',
                 os.path.join(SAGE_DOC_SRC, "common",
                              "python{}.inv".format(python_version))),
-    'pplpy': (os.path.join(SAGE_SHARE, "doc", "pplpy"), None)}
+    'pplpy': (PPLPY_DOCS, None)}
 
 def set_intersphinx_mappings(app):
     """
@@ -688,7 +688,7 @@ def call_intersphinx(app, env, node, contnode):
         sage: for line in open(thematic_index).readlines():  # optional - dochtml
         ....:     if "padics" in line:
         ....:         _ = sys.stdout.write(line)
-        <li><a class="reference external" href="../reference/padics/sage/rings/padics/tutorial.html#sage-rings-padics-tutorial" title="(in Sage Reference Manual: p-Adics v...)"><span>Introduction to the -adics</span></a></li>
+        <li><a class="reference external" href="../reference/padics/sage/rings/padics/tutorial.html#sage-rings-padics-tutorial" title="(in Sage Reference Manual: p-Adics v...)"><span>Introduction to the p-adics</span></a></li>
     """
     debug_inf(app, "???? Trying intersphinx for %s" % node['reftarget'])
     builder = app.builder
