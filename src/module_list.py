@@ -426,7 +426,8 @@ ext_modules = [
               sources = ['sage/graphs/spanning_tree.pyx']),
 
     Extension('sage.graphs.path_enumeration',
-              sources = ['sage/graphs/path_enumeration.pyx']),
+              sources = ['sage/graphs/path_enumeration.pyx'],
+              language = 'c++'),
 
     Extension('sage.graphs.connectivity',
           sources = ['sage/graphs/connectivity.pyx']),
@@ -452,6 +453,9 @@ ext_modules = [
 
     Extension('sage.graphs.base.boost_graph',
               sources = ['sage/graphs/base/boost_graph.pyx']),
+
+    Extension('sage.graphs.views',
+              sources = ['sage/graphs/views.pyx']),
 
     ################################
     ##

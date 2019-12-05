@@ -165,6 +165,7 @@ from sage.rings.integer_ring import ZZ
 import sage.graphs.generic_graph_pyx as generic_graph_pyx
 from sage.graphs.generic_graph import GenericGraph
 from sage.graphs.dot2tex_utils import have_dot2tex
+from sage.graphs.views import EdgesView
 
 class DiGraph(GenericGraph):
     r"""
@@ -665,9 +666,10 @@ class DiGraph(GenericGraph):
         if (format is None            and
             isinstance(data, list)    and
             len(data) == 2            and
-            isinstance(data[0], list) and # a list of two lists, the second of
-            isinstance(data[1], list) and # which contains iterables (the edges)
-            (not data[1] or callable(getattr(data[1][0], "__iter__", None)))):
+            isinstance(data[0], list) and    # a list of two lists, the second of
+            ((isinstance(data[1], list) and  # which contains iterables (the edges)
+              (not data[1] or callable(getattr(data[1][0], "__iter__", None)))) or
+             (isinstance(data[1], EdgesView)))):
             format = "vertices_and_edges"
 
         if format is None and isinstance(data, dict):
@@ -703,8 +705,8 @@ class DiGraph(GenericGraph):
             format = 'int'
             data = 0
 
-        # Input is a list of edges
-        if format is None and isinstance(data,list):
+        # Input is a list of edges or an EdgesView
+        if format is None and isinstance(data, (list, EdgesView)):
             format = "list_of_edges"
             if weighted is None:
                     weighted = False
@@ -2912,7 +2914,7 @@ class DiGraph(GenericGraph):
 
         return g
 
-    def flow_polytope(self, edges=None, ends=None):
+    def flow_polytope(self, edges=None, ends=None, backend=None):
         r"""
         Return the flow polytope of a digraph.
 
@@ -2943,7 +2945,7 @@ class DiGraph(GenericGraph):
 
         The faces and volume of these polytopes are of interest. Examples of
         these polytopes are the Chan-Robbins-Yuen polytope and the
-        Pitman-Stanley polytope [PitSta]_.
+        Pitman-Stanley polytope [PS2002]_.
 
         INPUT:
 
@@ -2959,6 +2961,9 @@ class DiGraph(GenericGraph):
 
         - ``ends`` -- (optional, default: ``(self.sources(), self.sinks())``) a
           pair `(S, T)` of an iterable `S` and an iterable `T`.
+
+        - ``backend`` -- string or ``None`` (default); the backend to use;
+          see :meth:`sage.geometry.polyhedron.constructor.Polyhedron`
 
         .. NOTE::
 
@@ -3052,12 +3057,6 @@ class DiGraph(GenericGraph):
             sage: Z.flow_polytope()
             A 0-dimensional polyhedron in QQ^0 defined as the convex hull
             of 1 vertex
-
-        REFERENCES:
-
-        .. [PitSta] Jim Pitman, Richard Stanley, "A polytope related to
-           empirical distributions, plane trees, parking functions, and
-           the associahedron", :arxiv:`math/9908029`
         """
         from sage.geometry.polyhedron.constructor import Polyhedron
         if edges is None:
@@ -3086,7 +3085,7 @@ class DiGraph(GenericGraph):
             eq = [const] + eq
             eqs.append(eq)
 
-        return Polyhedron(ieqs=ineqs, eqns=eqs)
+        return Polyhedron(ieqs=ineqs, eqns=eqs, backend=backend)
 
     def is_tournament(self):
         r"""

@@ -9,7 +9,7 @@ the faces in a particular dimension, use the
     sage: P = polytopes.cross_polytope(3)
     sage: P.faces(3)
     (A 3-dimensional face of a Polyhedron in ZZ^3 defined as the convex hull of 6 vertices,)
-    sage: [f.ambient_V_indices() for f in P.faces(2)]
+    sage: [f.ambient_V_indices() for f in P.facets()]
     [(0, 1, 2),
      (0, 1, 3),
      (0, 2, 4),
@@ -175,7 +175,7 @@ class PolyhedronFace(SageObject):
         EXAMPLES::
 
             sage: triangle = Polyhedron(vertices=[[1,0],[0,1],[1,1]])
-            sage: face = triangle.faces(1)[0]
+            sage: face = triangle.facets()[0]
             sage: for v in face.vertex_generator(): print(v)
             A vertex at (0, 1)
             A vertex at (1, 0)
@@ -573,12 +573,23 @@ class PolyhedronFace(SageObject):
             [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
               1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
               1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3]
+
+        TESTS:
+
+        Check that :trac:`28650` is fixed::
+
+            sage: P = Polyhedron(vertices=[[1,0]], rays=[[1,0],[0,1]])
+            sage: P.faces(2)
+            (A 2-dimensional face of a Polyhedron in QQ^2 defined as the convex hull of 1 vertex and 2 rays,)
         """
         if self.n_ambient_Vrepresentation() == 0:
             return -1
         else:
-            origin = vector(self.ambient_Vrepresentation(0))
-            v_list = [ vector(v)-origin for v in self.ambient_Vrepresentation() ]
+            origin = self.vertices()[0].vector()
+            v_list = [vector(v) - origin for v in
+                     self.ambient_Vrepresentation() if v.is_vertex()]
+            v_list += [vector(v) for v in self.ambient_Vrepresentation()
+                      if v.is_ray() or v.is_line()]
             return matrix(v_list).rank()
 
     def _repr_(self):
@@ -631,7 +642,7 @@ class PolyhedronFace(SageObject):
 
             sage: P = polytopes.cross_polytope(3); P
             A 3-dimensional polyhedron in ZZ^3 defined as the convex hull of 6 vertices
-            sage: face = P.faces(2)[3]
+            sage: face = P.facets()[3]
             sage: face
             A 2-dimensional face of a Polyhedron in ZZ^3 defined as the convex hull of 3 vertices
             sage: face.polyhedron()

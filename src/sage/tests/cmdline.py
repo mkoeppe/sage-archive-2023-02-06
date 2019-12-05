@@ -402,18 +402,20 @@ def test_executable(args, input="", timeout=100.0, **kwds):
         1
 
     Check that Sage refuses to run doctests from a directory whose
-    permissions are too loose.  We create a world-writable directory
-    inside a safe temporary directory to test this::
+    permissions are too loose. Note that this is relevant only for
+    Sage's Python 2, which is patched to produce this behavior. We
+    create a world-writable directory inside a safe temporary
+    directory to test this::
 
         sage: d = os.path.join(tmp_dir(), "test")
         sage: os.mkdir(d)
         sage: os.chmod(d, 0o777)
-        sage: (out, err, ret) = test_executable(["sage", "-t", "nonexisting.py"], cwd=d)
-        sage: print(err)
+        sage: (out, err, ret) = test_executable(["sage", "-t", "nonexisting.py"], cwd=d) # py2
+        sage: print(err) # py2
         ...
         RuntimeError: refusing to run doctests...
-        sage: (out, err, ret) = test_executable(["sage", "-tp", "1", "nonexisting.py"], cwd=d)
-        sage: print(err)
+        sage: (out, err, ret) = test_executable(["sage", "-tp", "1", "nonexisting.py"], cwd=d) # py2
+        sage: print(err) # py2
         ...
         RuntimeError: refusing to run doctests...
 
@@ -824,8 +826,8 @@ def test_executable(args, input="", timeout=100.0, **kwds):
         sage: input = tmp_filename(ext='.rst')
         sage: with open(input, 'w') as F:
         ....:     _ = F.write(s)
-        sage: (out, err, ret) = test_executable(["sage", "--rst2txt", input])
-        sage: print(out)
+        sage: (out, err, ret) = test_executable(["sage", "--rst2txt", input]) # py2
+        sage: print(out) # py2
         {{{id=0|
         2^10
         ///
@@ -839,7 +841,7 @@ def test_executable(args, input="", timeout=100.0, **kwds):
         }}}
         sage: err # py2
         ''
-        sage: ret
+        sage: ret # py2
         0
 
     Test ``sage --rst2txt file.rst file.txt`` on a ReST file::
@@ -849,9 +851,9 @@ def test_executable(args, input="", timeout=100.0, **kwds):
         sage: output = tmp_filename(ext='.txt')
         sage: with open(input, 'w') as F:
         ....:     _ = F.write(s)
-        sage: test_executable(["sage", "--rst2txt", input, output])
+        sage: test_executable(["sage", "--rst2txt", input, output]) # py2
         ('', ..., 0)
-        sage: print(open(output, 'r').read())
+        sage: print(open(output, 'r').read()) # py2
         {{{id=0|
         2^10
         ///
