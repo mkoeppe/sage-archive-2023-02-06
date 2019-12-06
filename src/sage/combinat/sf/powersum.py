@@ -725,8 +725,18 @@ class SymmetricFunctionAlgebra_power(multiplicative.SymmetricFunctionAlgebra_mul
               specialization.
 
             - ``q`` (default: ``None``) -- the value to use for `q`,
-              the default is to create the fraction field of
+              the default is to create a ring (or fraction field) of
               polynomials in ``q`` over the coefficient ring.
+
+            We use the formulas from Proposition 7.8.3 of [EnumComb2]_
+
+            .. MATH::
+
+                ps_{n,q}(p_\lambda) = \prod_i (1-q^{n\lambda_i}) / (1-q^{\lambda_i})
+
+                ps_{n,1}(p_\lambda) = n^{len(\lambda)}
+
+                ps_q(p_\lambda) = 1 / \prod_i (1-q^{\lambda_i})
 
             EXAMPLES::
 
@@ -744,7 +754,7 @@ class SymmetricFunctionAlgebra_power(multiplicative.SymmetricFunctionAlgebra_mul
                 sage: x.principal_specialization(3)
                 8*q^6 + 18*q^5 + 36*q^4 + 38*q^3 + 36*q^2 + 18*q + 9
 
-            If ``n`` is not given we return the stable principal specialisation::
+            If ``n`` is not given we return the stable principal specialization::
 
                 sage: x.principal_specialization(q=var("q"))
                 3/((q^2 - 1)*(q - 1)) - 5/(q - 1)^3 + 1
@@ -799,19 +809,18 @@ class SymmetricFunctionAlgebra_power(multiplicative.SymmetricFunctionAlgebra_mul
 
                 ex_q(f) = (1-q)^n t^n ps(f),
 
-            where `ps(f)` is the stable principal specialisation of `f`.
+            where `ps(f)` is the stable principal specialization of `f`.
             Note that setting `q = 1` in the stable principal
-            specialisation is an invalid operation.
+            specialization is an invalid operation.
 
             INPUT:
 
-            - ``t`` (default: None) -- the value to use for `t`, the default
-              is to create the fraction field of polynomials in ``t``
-              over the coefficient ring.
+            - ``t`` (default: None) -- the value to use for `t`, the
+              default is to create a ring of polynomials in ``t``.
 
-            - ``q`` (default: 1) -- the value to use for `q`.  If
-              ``q`` is ``None`` create the fraction field of
-              polynomials in ``q`` over the coefficient ring.
+            - ``q`` (default: 1) -- the value to use for `q`.  If ``q``
+              is ``None`` create a ring (or fraction field) of
+              polynomials in ``q``.
 
             EXAMPLES::
 

@@ -594,8 +594,29 @@ class SymmetricFunctionAlgebra_schur(classical.SymmetricFunctionAlgebra_classica
               specialization.
 
             - ``q`` (default: ``None``) -- the value to use for `q`,
-              the default is to create the fraction field of
+              the default is to create a ring (or fraction field) of
               polynomials in ``q`` over the coefficient ring.
+
+            For `q=1` we use the formula from Corollary 7.21.4 of [EnumComb2]_
+
+            .. MATH::
+
+                ps_{n,1}(s_\lambda) = \prod_{u\in\lambda} (n+c(u)) / h(u),
+
+            where `h(u)` is the hook length of a cell `u` in `\lambda`.
+
+            For `n=infinity` we use the formula from Corollary 7.21.3 of [EnumComb2]_
+
+            .. MATH::
+
+                ps_q(s_\lambda) = q^{\sum_i i\lambda_i} / \prod_{u\in\lambda} (1-q^{h(u)})
+
+            Otherwise, we use the formula  from Corollary 7.21.2 of [EnumComb2]_
+
+            .. MATH::
+
+                ps_{n,q}(s_\lambda) = q^{\sum_i i\lambda_i}
+                                      \prod_{u\in\lambda} (1-q^{n+c(u)}/(1-q^{h(u)})
 
             EXAMPLES::
 
@@ -652,34 +673,53 @@ class SymmetricFunctionAlgebra_schur(classical.SymmetricFunctionAlgebra_classica
             on the basis of homogeneous functions it is given by `ex(h_n)
             = t^n / n!`, see Proposition 7.8.4 of [EnumComb2]_.
 
-            By analogy `q`-exponential specialization is a ring homomorphism
-            defined on homogeneous symmetric functions `f` of degree `n`
-            as
+            By analogy, the `q`-exponential specialization is a ring
+            homomorphism defined on the complete homogeneous symmetric
+            functions as
 
             .. MATH::
 
                 ex_q(h_n) = t^n / [n]_q!,
 
-            where `[n]_q!` is the `q`-factorial.  Equivalently, for `q \neq 1`
+            where `[n]_q!` is the `q`-factorial.  Equivalently, for
+            `q \neq 1` and a homogeneous symmetric function `f` of
+            degree `n`,
 
             .. MATH::
 
                 ex_q(f) = (1-q)^n t^n ps(f),
 
-            where `ps(f)` is the stable principal specialisation of `f`.
+            where `ps(f)` is the stable principal specialization of `f`.
             Note that setting `q = 1` in the stable principal
-            specialisation is an invalid operation.
+            specialization is an invalid operation.
 
             INPUT:
 
-            - ``t`` (default: None) -- the value to use for `t`, the default
-              is to create the fraction field of polynomials in ``t``
-              over the coefficient ring.
+            - ``t`` (default: None) -- the value to use for `t`, the
+              default is to create a ring of polynomials in ``t``.
 
-            - ``q`` (default: 1) -- the value to use for `q`.  If
-              ``q`` is ``None`` create the fraction field of
-              polynomials in ``q`` over the coefficient ring.
+            - ``q`` (default: 1) -- the value to use for `q`.  If ``q``
+              is ``None`` create a ring (or fraction field) of
+              polynomials in ``q``.
 
+            We use the formula in the proof of Corollary 7.21.6 of
+            [EnumComb2]_
+
+            .. MATH::
+
+                ex_{n,q}(s_\lambda) = t^n q^{\sum_i i\lambda_i}
+                                      / \prod_{u\in\lambda} (1 + \dots + q^{h(u)-1})
+
+            where `h(u)` is the hook length of a cell `u` in `\lambda`.
+
+            As a limit case, we obtain a formula for `q=1`
+
+            .. MATH::
+
+                ex_{n,1}(s_\lambda) = f^\lambda t^n / n!
+
+            where `f^\lambda` is the number of standard Young
+            tableaux of shape `\lambda`.
 
             EXAMPLES::
 
@@ -722,7 +762,19 @@ class SymmetricFunctionAlgebra_schur(classical.SymmetricFunctionAlgebra_classica
 
                 return self.parent()._apply_module_morphism(self, f, t.parent())
 
-            return self.parent().realization_of().powersum()(self).exponential_specialization(t=t, q=q)
+            if q is None and t is None:
+                q = get_variable(self.base_ring(), 'q')
+                t = get_variable(q.parent(), 't')
+            elif q is None:
+                q = get_variable(t.parent(), 'q')
+            elif t is None:
+                t = get_variable(q.parent(), 't')
+
+            f = lambda partition: (t**partition.size()
+                                   * q**sum(i*part for i, part in enumerate(partition))
+                                   / prod(sum(q**i for i in range(h)) for h in partition.hooks()))
+
+            return self.parent()._apply_module_morphism(self, f, t.parent())
 
 
 # Backward compatibility for unpickling

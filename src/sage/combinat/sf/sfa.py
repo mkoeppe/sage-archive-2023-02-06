@@ -5459,8 +5459,8 @@ class SymmetricFunctionAlgebra_generic_Element(CombinatorialFreeModule.Element):
           specialization.
 
         - ``q`` (default: ``None``) -- the value to use for `q`, the
-          default is to create the fraction field of polynomials in
-          ``q`` over the coefficient ring.
+          default is to create a ring (or fraction field) of
+          polynomials in ``q`` over the coefficient ring.
 
         EXAMPLES::
 
@@ -5488,7 +5488,7 @@ class SymmetricFunctionAlgebra_generic_Element(CombinatorialFreeModule.Element):
             sage: Ht[2].principal_specialization(q=R("q"))
             (-q^2 - 1)/(-q^3 + q^2 + q - 1)
 
-        Note that the stable principal specialization can be obtained as a plethysm::
+        Note that the principal specialization can be obtained as a plethysm::
 
             sage: R = QQ['q'].fraction_field()
             sage: s = SymmetricFunctions(R).s()
@@ -5497,7 +5497,7 @@ class SymmetricFunctionAlgebra_generic_Element(CombinatorialFreeModule.Element):
             sage: f = s[3,2,2]
             sage: f.principal_specialization(q=q) == f(one/(1-q)).coefficient([])
             True
-            sage: f.principal_specialization(n=4,q=q) == f(one*(1-q^4)/(1-q)).coefficient([])
+            sage: f.principal_specialization(n=4, q=q) == f(one*(1-q^4)/(1-q)).coefficient([])
             True
 
         TESTS::
@@ -5540,33 +5540,34 @@ class SymmetricFunctionAlgebra_generic_Element(CombinatorialFreeModule.Element):
         on the basis of homogeneous functions it is given by `ex(h_n)
         = t^n / n!`, see Proposition 7.8.4 of [EnumComb2]_.
 
-        By analogy `q`-exponential specialization is a ring homomorphism
-        defined on homogeneous symmetric functions `f` of degree `n`
-        as
+        By analogy, the `q`-exponential specialization is a ring
+        homomorphism defined on the complete homogeneous symmetric
+        functions as
 
         .. MATH::
 
             ex_q(h_n) = t^n / [n]_q!,
 
-        where `[n]_q!` is the `q`-factorial.  Equivalently, for `q \neq 1`
+        where `[n]_q!` is the `q`-factorial.  Equivalently, for
+        `q \neq 1` and a homogeneous symmetric function `f` of
+        degree `n`,
 
         .. MATH::
 
             ex_q(f) = (1-q)^n t^n ps(f),
 
-        where `ps(f)` is the stable principal specialisation of `f`.
+        where `ps(f)` is the stable principal specialization of `f`.
         Note that setting `q = 1` in the stable principal
-        specialisation is an invalid operation.
+        specialization is an invalid operation.
 
         INPUT:
 
-        - ``t`` (default: None) -- the value to use for `t`, the default
-          is to create the fraction field of polynomials in ``t``
-          over the coefficient ring.
+        - ``t`` (default: None) -- the value to use for `t`, the
+          default is to create a ring of polynomials in ``t``.
 
         - ``q`` (default: 1) -- the value to use for `q`.  If ``q``
-          is ``None`` create the fraction field of polynomials in
-          ``q`` over the coefficient ring.
+          is ``None`` create a ring (or fraction field) of
+          polynomials in ``q``.
 
         EXAMPLES::
 

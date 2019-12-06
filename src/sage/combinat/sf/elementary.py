@@ -328,8 +328,18 @@ class SymmetricFunctionAlgebra_elementary(multiplicative.SymmetricFunctionAlgebr
               specialization.
 
             - ``q`` (default: ``None``) -- the value to use for `q`,
-              the default is to create the fraction field of
+              the default is to create a ring (or fraction field) of
               polynomials in ``q`` over the coefficient ring.
+
+            We use the formulas from Proposition 7.8.3 of [EnumComb2]_
+
+            .. MATH::
+
+                ps_{n,q}(e_\lambda) = \prod_i q^{\binom{\lambda_i}{2}} \binom{n}{\lambda_i}_q
+
+                ps_{n,1}(e_\lambda) = \prod_i \binom{n}{\lambda_i}
+
+                ps_q(e_\lambda) = \prod_i q^{\binom{\lambda_i}{2}} / \prod_{j=1}^{\lambda_i} (1-q^j)
 
             EXAMPLES::
 
@@ -389,33 +399,34 @@ class SymmetricFunctionAlgebra_elementary(multiplicative.SymmetricFunctionAlgebr
             on the basis of homogeneous functions it is given by `ex(h_n)
             = t^n / n!`, see Proposition 7.8.4 of [EnumComb2]_.
 
-            By analogy `q`-exponential specialization is a ring homomorphism
-            defined on homogeneous symmetric functions `f` of degree `n`
-            as
+            By analogy, the `q`-exponential specialization is a ring
+            homomorphism defined on the complete homogeneous symmetric
+            functions as
 
             .. MATH::
 
                 ex_q(h_n) = t^n / [n]_q!,
 
-            where `[n]_q!` is the `q`-factorial.  Equivalently, for `q \neq 1`
+            where `[n]_q!` is the `q`-factorial.  Equivalently, for
+            `q \neq 1` and a homogeneous symmetric function `f` of
+            degree `n`,
 
             .. MATH::
 
                 ex_q(f) = (1-q)^n t^n ps(f),
 
-            where `ps(f)` is the stable principal specialisation of `f`.
+            where `ps(f)` is the stable principal specialization of `f`.
             Note that setting `q = 1` in the stable principal
-            specialisation is an invalid operation.
+            specialization is an invalid operation.
 
             INPUT:
 
-            - ``t`` (default: None) -- the value to use for `t`, the default
-              is to create the fraction field of polynomials in ``t``
-              over the coefficient ring.
+            - ``t`` (default: None) -- the value to use for `t`, the
+              default is to create a ring of polynomials in ``t``.
 
-            - ``q`` (default: 1) -- the value to use for `q`.  If
-              ``q`` is ``None`` create the fraction field of
-              polynomials in ``q`` over the coefficient ring.
+            - ``q`` (default: 1) -- the value to use for `q`.  If ``q``
+              is ``None`` create a ring (or fraction field) of
+              polynomials in ``q``.
 
             EXAMPLES::
 
@@ -464,7 +475,6 @@ class SymmetricFunctionAlgebra_elementary(multiplicative.SymmetricFunctionAlgebr
                 q = get_variable(t.parent(), 'q')
             elif t is None:
                 t = get_variable(q.parent(), 't')
-
 
             def f(partition):
                 n = 0
