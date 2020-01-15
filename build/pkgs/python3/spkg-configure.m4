@@ -1,6 +1,5 @@
 SAGE_SPKG_CONFIGURE([python3], [
-    # Add sqlite to depcheck when spkg-configure for it is available
-    SAGE_SPKG_DEPCHECK([libpng bzip2 xz libffi], [
+    SAGE_SPKG_DEPCHECK([sqlite libpng bzip2 xz libffi], [
         AC_CACHE_CHECK([for python3 >= 3.7.3, < 3.8 with sqlite3 module], [ac_cv_path_PYTHON3], [
             AC_MSG_RESULT([])
             AC_PATH_PROGS_FEATURE_CHECK([PYTHON3], [python3.7 python3], [
