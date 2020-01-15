@@ -1,0 +1,7 @@
+# Create or update the venv.
+# The environment variable is set by src/bin/sage-env.
+if [ -r "$SAGE_VENV"/bin/activate ]; then
+   python3 -m venv --upgrade --system-site-packages --without-pip "$SAGE_VENV"
+else
+   python3 -m venv --system-site-packages --without-pip "$SAGE_VENV"
+fi
