@@ -9,6 +9,9 @@ SAGE_SPKG_CONFIGURE([python3], [
                 AS_IF([test -n "$python3_version"], [
                     AX_COMPARE_VERSION([$python3_version], [ge], [3.7.3], [
                         AX_COMPARE_VERSION([$python3_version], [lt], [3.8.0], [
+                            dnl Because the system python is not used directly but rather in a venv without site-packages,
+                            dnl we test whether the module will be available in a venv.
+                            dnl Otherwise, some system site-package may be providing this module to the system python.
                             rm -rf config_venv
                             AS_IF(["$ac_path_PYTHON3" -m venv --without-pip --symlinks config_venv && config_venv/bin/python3 -c "import sqlite3"], [
                                 ac_cv_path_PYTHON3="$ac_path_PYTHON3"
