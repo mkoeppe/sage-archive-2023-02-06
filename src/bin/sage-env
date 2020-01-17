@@ -398,8 +398,7 @@ if [ "$SAGE_PYTHON3" = yes ]; then
     # In a Python 3 build of sage, we install all Python package in a venv.
     # We define the variable here even if the venv directory does not exist yet.
     # build/pkgs/python3/spkg-postinst creates/updates the venv.
-    SAGE_VENV_NAME=sage
-    SAGE_VENV="$SAGE_LOCAL/lib/sage/venv/$SAGE_VENV_NAME"
+    SAGE_VENV="$SAGE_LOCAL/lib/sage/venv"
     export SAGE_VENV
     if [ -r "$SAGE_VENV/bin/activate" ] ; then
         . "$SAGE_VENV/bin/activate"
