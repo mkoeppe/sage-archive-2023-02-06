@@ -29,7 +29,7 @@ STARTED = $(SAGE_LOCAL)/etc/sage-started.txt
 	sagelib \
 	doc doc-html doc-html-jsmath doc-html-mathjax doc-pdf \
 	doc-clean doc-src-clean doc-output-clean \
-	clean sagelib-clean build-clean _clean-broken-gcc
+	clean sagelib-clean build-clean python3_venv _clean-broken-gcc
 
 # Build everything and start Sage.
 # Note that we put the "doc" target first in the rule below because
