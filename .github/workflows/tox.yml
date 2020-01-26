@@ -11,7 +11,7 @@ jobs:
         tox_system_factor: [ubuntu-xenial, ubuntu-bionic, ubuntu-focal, debian-buster, fedora-28, fedora-31, fedora-32, archlinux-latest]
         tox_packages_factor: [minimal, standard]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Install test prerequisites
         run: |
         sudo DEBIAN_FRONTEND=noninteractive apt-get update
