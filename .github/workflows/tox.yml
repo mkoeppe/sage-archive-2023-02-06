@@ -12,5 +12,9 @@ jobs:
         tox_packages_factor: [minimal, standard]
     steps:
       - uses: actions/checkout@v1
+      - name: Install test prerequisites
+        run: |
+        sudo DEBIAN_FRONTEND=noninteractive apt-get update
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install python-tox
       - run: |
           tox -e docker-${{ matrix.tox_system_factor }}-${{ matrix.tox_packages_factor }}
