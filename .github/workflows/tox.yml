@@ -25,5 +25,5 @@ jobs:
       - uses: actions/upload-artifact@v1
         with:
           path: artifacts
-          name: artifacts
+          name: logs-docker-${{ matrix.tox_system_factor }}-${{ matrix.tox_packages_factor }}
         if: always()
