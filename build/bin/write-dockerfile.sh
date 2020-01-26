@@ -32,11 +32,14 @@ for PKG_SCRIPTS in build/pkgs/*; do
         fi
     fi
 done
+# The :comments: separate the generated file into sections
+# to simplify customization.
 case $SYSTEM in
     debian*|ubuntu*)
         cat <<EOF
 ARG BASE_IMAGE=ubuntu:latest
 FROM \${BASE_IMAGE}
+#:packages:
 RUN apt-get update &&  DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --yes $SYSTEM_PACKAGES
 EOF
         ;;
@@ -55,25 +58,32 @@ FROM \${BASE_IMAGE}
 RUN pacman -Syu --noconfirm $SYSTEM_PACKAGES
 EOF
         ;;
+    conda*)
+        cat <<EOF
+ARG BASE_IMAGE=continuumio/miniconda3:latest
+ARG CONDARC=condarc.yml
+ENV CONDARC=\${CONDARC}
+RUN conda install --update-all --yes $SYSTEM_PACKAGES
+EOF
     *)
-        echo "Not implemented: package installation for SYSTEM=$SYSTEM"
+        echo "Not implemented: package installation for SYSTEM=$SYSTEM" >&2
         exit 1
         ;;
 esac
 cat <<EOF
-# Bootstrapping
+#:bootstrapping:
 RUN mkdir -p /sage
 WORKDIR /sage
-ADD Makefile VERSION.txt README.md bootstrap configure.ac sage ./
+ADD Makefile VERSION.txt README.md bootstrap configure.ac condarc.yml sage ./
 ADD m4 ./m4
 ADD build ./build
 ADD src/bin/sage-version.sh src/bin/sage-version.sh
 RUN ./bootstrap
-# Configuring
+#:configuring:
 ADD src/ext src/ext
 ADD src/bin src/bin
 ADD src/Makefile.in src/Makefile.in
-ARG EXTRA_CONFIGURE_ARGS
+ARG EXTRA_ENV=
 EOF
 if [ ${WITH_SYSTEM_SPKG} = "force" ]; then
     cat <<EOF
@@ -89,10 +99,13 @@ cat <<EOF
 ARG NUMPROC=8
 ENV MAKE="make -j\${NUMPROC}"
 ARG MAKEFLAGS="-k"
+#:toolchain:
 RUN make \${MAKEFLAGS} base-toolchain
+#:make:
 # Avoid running the lengthy testsuite of the following.
 RUN make \${MAKEFLAGS} cython
 # Compile something tricky: Everything that uses BLAS.
 ARG TARGETS="scipy cbc csdp fflas_ffpack gsl iml numpy r suitesparse cvxopt"
 RUN SAGE_CHECK=yes make \${MAKEFLAGS} \${TARGETS}
+#:end:
 EOF
