@@ -65,6 +65,7 @@ ARG CONDARC=condarc.yml
 ENV CONDARC=\${CONDARC}
 RUN conda install --update-all --yes $SYSTEM_PACKAGES
 EOF
+        ;;
     *)
         echo "Not implemented: package installation for SYSTEM=$SYSTEM" >&2
         exit 1
