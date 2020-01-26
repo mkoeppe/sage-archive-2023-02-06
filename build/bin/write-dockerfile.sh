@@ -88,11 +88,11 @@ cat <<EOF
 # We first compile base-toolchain because otherwise lots of packages are missing their dependency on 'patch'
 ARG NUMPROC=8
 ENV MAKE="make -j\${NUMPROC}"
-RUN make base-toolchain
-# Avoid running the lengthy testsuite of the following.
-RUN make cython
-# Compile something tricky: Everything that uses BLAS.
 ARG MAKEFLAGS="-k"
+RUN make \${MAKEFLAGS} base-toolchain
+# Avoid running the lengthy testsuite of the following.
+RUN make \${MAKEFLAGS} cython
+# Compile something tricky: Everything that uses BLAS.
 ARG TARGETS="scipy cbc csdp fflas_ffpack gsl iml numpy r suitesparse cvxopt"
-RUN SAGE_CHECK=yes MAKE="make -j4" make \${MAKEFLAGS} \${TARGETS}
+RUN SAGE_CHECK=yes make \${MAKEFLAGS} \${TARGETS}
 EOF
