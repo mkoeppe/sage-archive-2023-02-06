@@ -20,7 +20,7 @@ jobs:
           EXTRA_DOCKER_BUILD_ARGS="--build-arg MAKEFLAGS=\"-k V=0\"" tox -e docker-${{ matrix.tox_system_factor }}-${{ matrix.tox_packages_factor }}
       - name: Copy logs from the build container
         run: |
-          mkdir -p artifacts; for CONTAINER in `docker ps -q -a`; do for ARTIFACT in /sage/config.log /sage/logs/pkgs/; do docker cp $CONTAINER:$ARTIFACT artifacts/ && HAVE_LOG=1; done; if [ -n "$HAVE_LOG ]; then break; fi; done
+          mkdir -p artifacts; cp .tox/*/Dockerfile artifacts/; for CONTAINER in `docker ps -q -a`; do for ARTIFACT in  /sage/config.log /sage/logs/pkgs/; do docker cp $CONTAINER:$ARTIFACT artifacts/ && HAVE_LOG=1; done; if [ -n "$HAVE_LOG" ]; then break; fi; done
         if: always()
       - uses: actions/upload-artifact@v1
         with:
