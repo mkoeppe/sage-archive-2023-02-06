@@ -70,7 +70,7 @@ ADD *condarc*.yml /tmp/
 RUN echo \${CONDARC}; cd /tmp && conda config --stdin < \${USE_CONDARC}
 RUN conda update -n base conda
 EOF
-        INSTALL="conda install --update-all --yes"
+        INSTALL="conda install --update-all --quiet --yes"
         EXISTS="2>/dev/null >/dev/null conda search -f"
         #EXISTS="conda search -f"
         ;;
@@ -145,7 +145,7 @@ cat <<EOF
 # We first compile base-toolchain because otherwise lots of packages are missing their dependency on 'patch'
 ARG NUMPROC=8
 ENV MAKE="make -j\${NUMPROC}"
-ARG MAKEFLAGS="-k"
+ARG USE_MAKEFLAGS="-k"
 #:toolchain:
 RUN make \${MAKEFLAGS} base-toolchain
 #:make:
