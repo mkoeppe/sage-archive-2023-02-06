@@ -130,7 +130,7 @@ RUN ./bootstrap
 ADD src/ext src/ext
 ADD src/bin src/bin
 ADD src/Makefile.in src/Makefile.in
-ARG EXTRA_ENV=
+ARG EXTRA_CONFIGURE_ARGS=""
 EOF
 if [ ${WITH_SYSTEM_SPKG} = "force" ]; then
     cat <<EOF
