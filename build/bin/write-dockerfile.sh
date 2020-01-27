@@ -43,7 +43,7 @@ ARG BASE_IMAGE=ubuntu:latest
 FROM \${BASE_IMAGE}
 EOF
         UPDATE="apt-get update &&"
-        INSTALL="DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --yes"
+        INSTALL="DEBIAN_FRONTEND=noninteractive apt-get install -qqq --no-install-recommends --yes"
         CLEAN="&& apt-get clean"
         ;;
     fedora*|redhat*|centos*)
@@ -70,24 +70,47 @@ ADD *condarc*.yml /tmp/
 RUN conda config --stdin < /tmp/\${CONDARC}
 EOF
         INSTALL="conda install --update-all --yes"
+        EXISTS="2>/dev/null >/dev/null conda search -f"
+        #EXISTS="conda search -f"
         ;;
     *)
         echo "Not implemented: package installation for SYSTEM=$SYSTEM" >&2
         exit 1
         ;;
 esac
+cat <<EOF
+#:packages:
+ENV PACKAGES="$SYSTEM_PACKAGES"
+EOF
 case "$IGNORE_MISSING_SYSTEM_PACKAGES" in
     no)
         cat <<EOF
-#:packages:
 RUN $UPDATE $INSTALL $SYSTEM_PACKAGES $CLEAN
 EOF
         ;;
     yes)
-        cat <<EOF
-#:packages:
-RUN $UPDATE for pkg in $SYSTEM_PACKAGES; do $INSTALL \$pkg; done; : $CLEAN
+        if [ -n "$EXISTS" ]; then
+            # Filter by existing packages, try to install these in one shot; fall back to one by one.
+            cat <<EOF
+RUN $UPDATE EXISTING_PACKAGES=""; for pkg in \$PACKAGES; do echo -n .; if $EXISTS \$pkg; then EXISTING_PACKAGES="\$EXISTING_PACKAGES \$pkg"; echo -n "\$pkg"; fi; done; $INSTALL \$EXISTING_PACKAGES || (echo "Trying again one by one:"; for pkg in \$EXISTING_PACKAGES; do echo "Trying to install \$pkg"; $INSTALL \$pkg || echo "(ignoring error)"; done); : $CLEAN
 EOF
+        else
+            # Try in one shot, fall back to one by one.  Separate "RUN" commands
+            # for caching by docker.
+            cat <<EOF
+RUN $UPDATE $INSTALL \${PACKAGES} || echo "(ignoring error)"
+EOF
+            for pkg in $SYSTEM_PACKAGES; do
+                cat <<EOF
+RUN $INSTALL $pkg || echo "(ignoring error)"
+EOF
+            done
+            if [ -n "$CLEAN" ]; then
+                cat <<EOF
+RUN : $CLEAN
+EOF
+            fi
+        fi
         ;;
     *)
         echo "Argument IGNORE_MISSING_SYSTEM_PACKAGES must be yes or no"
