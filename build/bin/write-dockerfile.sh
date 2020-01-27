@@ -147,12 +147,12 @@ ARG NUMPROC=8
 ENV MAKE="make -j\${NUMPROC}"
 ARG USE_MAKEFLAGS="-k"
 #:toolchain:
-RUN make \${MAKEFLAGS} base-toolchain
+RUN make \${USE_MAKEFLAGS} base-toolchain
 #:make:
 # Avoid running the lengthy testsuite of the following.
-RUN make \${MAKEFLAGS} cython
+RUN make \${USE_MAKEFLAGS} cython
 # By default, compile something tricky but that does not take too long. scipy uses BLAS.
 ARG TARGETS="scipy"
-RUN SAGE_CHECK=yes make \${MAKEFLAGS} \${TARGETS}
+RUN SAGE_CHECK=yes make \${USE_MAKEFLAGS} \${TARGETS}
 #:end:
 EOF
