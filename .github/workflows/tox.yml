@@ -10,6 +10,8 @@ jobs:
       matrix:
         tox_system_factor: [ubuntu-trusty, ubuntu-xenial, ubuntu-bionic, ubuntu-eoan, ubuntu-focal, debian-sid, debian-jessie, debian-buster, debian-bullseye, fedora-26, fedora-28, fedora-31, fedora-32, archlinux-latest, conda-forge, conda-anaconda3]
         tox_packages_factor: [minimal, standard]
+    env:
+      LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-${{ github.workflow }}-docker-${{ matrix.tox_system_factor }}-${{ matrix.tox_packages_factor }}
     steps:
       - uses: actions/checkout@v2
       - name: Install test prerequisites
@@ -20,14 +22,16 @@ jobs:
           EXTRA_DOCKER_BUILD_ARGS="--build-arg USE_MAKEFLAGS=\"-k V=0\" --build-arg TARGETS=\"cbc csdp fflas_ffpack gsl iml numpy r suitesparse cvxopt\"" tox -e docker-${{ matrix.tox_system_factor }}-${{ matrix.tox_packages_factor }}
       - name: Copy logs from the build container
         run: |
-          mkdir -p artifacts; cp .tox/*/Dockerfile artifacts/; for CONTAINER in `docker ps -q -a`; do for ARTIFACT in  /sage/config.log /sage/logs/pkgs/; do docker cp $CONTAINER:$ARTIFACT artifacts/ && HAVE_LOG=1; done; if [ -n "$HAVE_LOG" ]; then break; fi; done
+          mkdir -p "artifacts/$LOGS_ARTIFACT_NAME"; cp .tox/*/Dockerfile "artifacts/$LOGS_ARTIFACT_NAME"; for CONTAINER in `docker ps -q -a`; do for ARTIFACT in  /sage/config.log /sage/logs/pkgs/; do docker cp $CONTAINER:$ARTIFACT artifacts/$LOGS_ARTIFACT_NAME && HAVE_LOG=1; done; if [ -n "$HAVE_LOG" ]; then break; fi; done
         if: always()
       - uses: actions/upload-artifact@v1
         with:
           path: artifacts
-          name: logs-docker-${{ matrix.tox_system_factor }}-${{ matrix.tox_packages_factor }}
+          name: ${{ env.LOGS_ARTIFACT_NAME }}
         if: always()
       - name: Print out logs for immediate inspection
+        # The markup in the output is a GitHub Actions logging command
+        # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/development-tools-for-github-actions
         run: |
-          find artifacts/ -type f -exec sh -c 'if tail -20 "{}" 2>/dev/null | grep "^Error" >/dev/null; then echo :":"error file={}:":" ==== LOG FILE {} CONTAINS AN ERROR ====; cat {} ; fi' \;
+          find "artifacts/$LOGS_ARTIFACT_NAME" -type f -name "*.log" -exec sh -c 'if tail -20 "{}" 2>/dev/null | grep "^Error" >/dev/null; then echo :":"error file={}:":" ==== LOG FILE {} CONTAINS AN ERROR ====; cat {} ; fi' \;
         if: always()
