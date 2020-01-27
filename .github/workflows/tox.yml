@@ -17,7 +17,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install python-tox
       - run: |
-          EXTRA_DOCKER_BUILD_ARGS="--build-arg MAKEFLAGS=\"-k V=0\"" tox -e docker-${{ matrix.tox_system_factor }}-${{ matrix.tox_packages_factor }}
+          EXTRA_DOCKER_BUILD_ARGS="--build-arg USE_MAKEFLAGS=\"-k V=0\"" tox -e docker-${{ matrix.tox_system_factor }}-${{ matrix.tox_packages_factor }}
       - name: Copy logs from the build container
         run: |
           mkdir -p artifacts; cp .tox/*/Dockerfile artifacts/; for CONTAINER in `docker ps -q -a`; do for ARTIFACT in  /sage/config.log /sage/logs/pkgs/; do docker cp $CONTAINER:$ARTIFACT artifacts/ && HAVE_LOG=1; done; if [ -n "$HAVE_LOG" ]; then break; fi; done
