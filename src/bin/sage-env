@@ -313,6 +313,8 @@ export UNAME=`uname | sed 's/CYGWIN.*/CYGWIN/' `
 
 # Mac OS X-specific setup
 if [ "$UNAME" = "Darwin" ]; then
+  # Avoid 'MACOSX_DEPLOYMENT_TARGET mismatch: now "10.9" but "10.15" during configure'
+  if [ -z "@PYTHON_FOR_VENV@" ]; then
     # set MACOSX_DEPLOYMENT_TARGET -- if set incorrectly, this can
     # cause lots of random "Abort trap" issues on OSX. see trac
     # #7095 for an example.
@@ -325,7 +327,7 @@ if [ "$UNAME" = "Darwin" ]; then
         MACOSX_DEPLOYMENT_TARGET=10.$[$MACOSX_VERSION-4]
     fi
     export MACOSX_DEPLOYMENT_TARGET MACOSX_VERSION
-
+  fi
     # Work around problems on recent OS X crashing with an error message
     # "... may have been in progress in another thread when fork() was called"
     # when objective-C functions are called after fork(). See Trac #25921.
@@ -391,6 +393,19 @@ fi
 if [ "$PYTHON_EGG_CACHE" = "" ]; then
     PYTHON_EGG_CACHE="$DOT_SAGE/.python-eggs"
     export PYTHON_EGG_CACHE
+fi
+
+#
+
+if [ "$SAGE_PYTHON3" = yes ]; then
+    # In a Python 3 build of sage, we install all Python package in a venv.
+    # We define the variable here even if the venv directory does not exist yet.
+    # build/pkgs/python3/spkg-postinst creates/updates the venv.
+    SAGE_VENV="$SAGE_LOCAL/lib/sage/venv"
+    export SAGE_VENV
+    if [ -r "$SAGE_VENV/bin/activate" ] ; then
+        . "$SAGE_VENV/bin/activate"
+    fi
 fi
 
 # Set PYTHONUSERBASE to avoid picking up non-Sage versions of

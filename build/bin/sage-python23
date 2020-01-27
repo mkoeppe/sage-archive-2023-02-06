@@ -11,7 +11,9 @@
 # using for installing Python packages if at all possible.
 
 
-if [ "$SAGE_PYTHON3" = yes ]; then
+if [ -n "$SAGE_VENV" ]; then
+   PYTHON="$SAGE_VENV/bin/python3"
+elif [ "$SAGE_PYTHON3" = yes ]; then
    PYTHON="$SAGE_LOCAL/bin/python3"
 else
    PYTHON="$SAGE_LOCAL/bin/python2"
