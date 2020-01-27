@@ -65,9 +65,10 @@ EOF
         cat <<EOF
 ARG BASE_IMAGE=continuumio/miniconda3:latest
 FROM \${BASE_IMAGE}
-ARG CONDARC=condarc.yml
+ARG USE_CONDARC=condarc.yml
 ADD *condarc*.yml /tmp/
-RUN conda config --stdin < /tmp/\${CONDARC}
+RUN echo \${CONDARC}; cd /tmp && conda config --stdin < \${USE_CONDARC}
+RUN conda update -n base conda
 EOF
         INSTALL="conda install --update-all --yes"
         EXISTS="2>/dev/null >/dev/null conda search -f"
@@ -151,7 +152,8 @@ RUN make \${MAKEFLAGS} base-toolchain
 # Avoid running the lengthy testsuite of the following.
 RUN make \${MAKEFLAGS} cython
 # Compile something tricky: Everything that uses BLAS.
-ARG TARGETS="scipy cbc csdp fflas_ffpack gsl iml numpy r suitesparse cvxopt"
+#ARG TARGETS="scipy cbc csdp fflas_ffpack gsl iml numpy r suitesparse cvxopt"
+ARG TARGETS="scipy"
 RUN SAGE_CHECK=yes make \${MAKEFLAGS} \${TARGETS}
 #:end:
 EOF
