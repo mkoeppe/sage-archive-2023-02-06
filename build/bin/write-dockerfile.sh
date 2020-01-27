@@ -130,6 +130,7 @@ RUN ./bootstrap
 ADD src/ext src/ext
 ADD src/bin src/bin
 ADD src/Makefile.in src/Makefile.in
+ADD src/sage/env_config.py.in src/sage/env_config.py.in
 ARG EXTRA_CONFIGURE_ARGS=""
 EOF
 if [ ${WITH_SYSTEM_SPKG} = "force" ]; then
