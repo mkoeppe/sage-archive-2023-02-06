@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tox_system_factor: [ubuntu-xenial, ubuntu-bionic, ubuntu-focal, debian-buster, fedora-28, fedora-31, fedora-32, archlinux-latest, conda-forge, conda-anaconda3]
+        tox_system_factor: [ubuntu-trusty, ubuntu-xenial, ubuntu-bionic, ubuntu-eoan, ubuntu-focal, debian-sid, debian-jessie, debian-buster, debian-bullseye, fedora-26, fedora-28, fedora-31, fedora-32, archlinux-latest, conda-forge, conda-anaconda3]
         tox_packages_factor: [minimal, standard]
     steps:
       - uses: actions/checkout@v2
@@ -29,5 +29,5 @@ jobs:
         if: always()
       - name: Print out logs for immediate inspection
         run: |
-          find artifacts/ -type f -exec sh -c 'if tail -20 "{}" 2>/dev/null | grep "^Error" >/dev/null; then echo :":"error file={}:": ==== LOG FILE {} CONTAINS AN ERROR ====; cat {} ; fi' \;
+          find artifacts/ -type f -exec sh -c 'if tail -20 "{}" 2>/dev/null | grep "^Error" >/dev/null; then echo :":"error file={}:":? ==== LOG FILE {} CONTAINS AN ERROR ====; cat {} ; fi' \;
         if: always()
