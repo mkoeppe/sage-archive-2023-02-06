@@ -151,8 +151,7 @@ RUN make \${MAKEFLAGS} base-toolchain
 #:make:
 # Avoid running the lengthy testsuite of the following.
 RUN make \${MAKEFLAGS} cython
-# Compile something tricky: Everything that uses BLAS.
-#ARG TARGETS="scipy cbc csdp fflas_ffpack gsl iml numpy r suitesparse cvxopt"
+# By default, compile something tricky but that does not take too long. scipy uses BLAS.
 ARG TARGETS="scipy"
 RUN SAGE_CHECK=yes make \${MAKEFLAGS} \${TARGETS}
 #:end:
