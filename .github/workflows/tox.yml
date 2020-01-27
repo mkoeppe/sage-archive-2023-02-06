@@ -29,5 +29,5 @@ jobs:
         if: always()
       - name: Print out logs for immediate inspection
         run: |
-          find artifacts/ -type f -exec sh -c 'if tail -20 "{}" 2>/dev/null | grep "^Error" &>/dev/null; then echo :":"error file={}:":" ==== LOG FILE FOLLOWS ====; cat {} ; fi' \;
+          find artifacts/ -type f -exec sh -c 'if tail -20 "{}" 2>/dev/null | grep "^Error" >/dev/null; then echo :":"error:":" ==== LOG FILE {} FOLLOWS ====; cat {} ; fi' \;
         if: always()
