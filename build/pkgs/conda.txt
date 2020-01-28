@@ -5,3 +5,4 @@ perl
 python
 tar
 bc
+fortran-compiler

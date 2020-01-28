@@ -25,3 +25,4 @@ gcc
 # configure: error: in `/sage':
 # configure: error: C++ preprocessor "/lib/cpp" fails sanity check
 g++
+gfortran
