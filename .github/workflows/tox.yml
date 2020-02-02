@@ -34,6 +34,7 @@ jobs:
         run: |
           brew install tox
           brew cask install docker
+          ln -sf /Applications/Docker.app/Contents/Resources/bin/docker /usr/local/bin/
       - run: |
           EXTRA_DOCKER_BUILD_ARGS="--build-arg USE_MAKEFLAGS=\"-k V=0\" --build-arg TARGETS=\"$TARGETS\"" tox -e $TOX_ENV
       - name: Copy logs from the build container
