@@ -23,7 +23,7 @@ jobs:
       matrix:
         tox_system_factor: [ubuntu-trusty, ubuntu-xenial, ubuntu-bionic, ubuntu-eoan, ubuntu-focal, debian-sid, debian-jessie, debian-buster, debian-bullseye, fedora-26, fedora-28, fedora-31, fedora-32, centos-7, centos-8, archlinux-latest, conda-forge, conda-anaconda3]
         tox_packages_factor: [minimal, standard]
-        runs_on: [ubuntu-latest]
+        runs-on: [ubuntu-latest]
         include:
           - runs-on: macos-latest
             tox_system_factor: ubuntu-bionic-i386
