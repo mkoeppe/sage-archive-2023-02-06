@@ -43,7 +43,7 @@ case $SYSTEM in
 ARG BASE_IMAGE=ubuntu:latest
 FROM \${BASE_IMAGE}
 EOF
-        UPDATE="apt-get update &&"
+        UPDATE="apt-get update && apt-get upgrade -q --yes &&"
         INSTALL="DEBIAN_FRONTEND=noninteractive apt-get install -qqq --no-install-recommends --yes"
         CLEAN="&& apt-get clean"
         ;;
