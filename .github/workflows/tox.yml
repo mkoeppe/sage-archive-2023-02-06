@@ -21,19 +21,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tox_system_factor: [ubuntu-trusty, ubuntu-xenial, ubuntu-bionic, ubuntu-eoan, ubuntu-focal, debian-sid, debian-jessie, debian-buster, debian-bullseye, fedora-26, fedora-28, fedora-31, fedora-32, centos-7, centos-8, archlinux-latest, conda-forge, conda-anaconda3]
+        tox_system_factor: [ubuntu-trusty, ubuntu-xenial, ubuntu-bionic, ubuntu-eoan, ubuntu-focal, debian-sid, debian-jessie, debian-buster, debian-bullseye, fedora-26, fedora-28, fedora-31, fedora-32, centos-7, centos-8, archlinux-latest, conda-forge, conda-anaconda3, ubuntu-bionic-i386, ubuntu-eoan-arm64v8, ubuntu-eoan-s390x]
         tox_packages_factor: [minimal, standard]
-        docker_runs_on: [ubuntu-latest]
-        include:
-          - docker_runs_on: macos-latest
-            tox_system_factor: ubuntu-bionic-i386
-            tox_packages_factor: minimal
-          - docker_runs_on: macos-latest
-            tox_system_factor: ubuntu-eoan-arm64v8
-            tox_packages_factor: standard
-          - docker_runs_on: macos-latest
-            tox_system_factor: ubuntu-eoan-s390x
-            tox_packages_factor: standard
+        docker_runs_on: [ubuntu-latest, macos-latest]
     env:
       TOX_ENV: docker-${{ matrix.tox_system_factor }}-${{ matrix.tox_packages_factor }}
       # We test everything BLAS-related and other problematic packages
