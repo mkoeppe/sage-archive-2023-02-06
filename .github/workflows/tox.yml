@@ -41,11 +41,11 @@ jobs:
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install python-tox
-        if: job.runs_on == 'ubuntu-latest'
+        if: runner.os == 'Linux'
       - name: Install test prerequisites (macOS host)
         run: |
           brew install tox
-        if: job.runs_on == 'macos-latest'
+        if: runner.os == 'macOS'
       - run: |
           EXTRA_DOCKER_BUILD_ARGS="--build-arg USE_MAKEFLAGS=\"-k V=0\" --build-arg TARGETS=\"$TARGETS\"" tox -e $TOX_ENV
       - name: Copy logs from the build container
