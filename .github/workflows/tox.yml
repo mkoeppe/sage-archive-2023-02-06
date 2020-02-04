@@ -35,7 +35,7 @@ jobs:
         # https://stackoverflow.com/questions/47301434/sudo-docker-machine-command-not-found
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install curl python-tox virtualbox
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install curl python-tox virtualbox ssh-client
           curl -L https://github.com/docker/machine/releases/download/v0.14.0/docker-machine-`uname -s`-`uname -m` >/tmp/docker-machine && sudo install /tmp/docker-machine /usr/local/bin/docker-machine
       - run: |
           docker-machine --debug create --driver virtualbox --virtualbox-no-vtx-check vbox
