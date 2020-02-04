@@ -35,8 +35,9 @@ jobs:
           brew install tox
           brew install docker docker-machine
           brew cask install virtualbox
-          docker-machine create --driver virtualbox default
       - run: |
+          brew services start docker-machine
+          docker-machine create --driver virtualbox default
           eval "$(docker-machine env default)"
           docker info
           EXTRA_DOCKER_BUILD_ARGS="--build-arg USE_MAKEFLAGS=\"-k V=0\" --build-arg TARGETS=\"$TARGETS\"" tox -e $TOX_ENV
