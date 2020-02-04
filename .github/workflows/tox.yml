@@ -17,7 +17,7 @@ on: [push, pull_request]
 
 jobs:
   docker-macos:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -30,14 +30,13 @@ jobs:
       LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-tox-docker-${{ matrix.tox_system_factor }}-${{ matrix.tox_packages_factor }}
     steps:
       - uses: actions/checkout@v2
-      - name: Install test prerequisites (macOS host)
+      - name: Install test prerequisites (Linux host)
         run: |
-          brew install tox
-          brew install docker docker-machine
-          brew cask install virtualbox
-          docker-machine create --driver virtualbox default
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install python-tox virtualbox
+          docker-machine create --driver virtualbox vbox
       - run: |
-          eval "$(docker-machine env default)"
+          eval "$(docker-machine env vbox)"
           docker info
           EXTRA_DOCKER_BUILD_ARGS="--build-arg USE_MAKEFLAGS=\"-k V=0\" --build-arg TARGETS=\"$TARGETS\"" tox -e $TOX_ENV
       - name: Copy logs from the build container
