@@ -37,8 +37,8 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install curl python-tox virtualbox
           curl -L https://github.com/docker/machine/releases/download/v0.14.0/docker-machine-`uname -s`-`uname -m` >/tmp/docker-machine && sudo install /tmp/docker-machine /usr/local/bin/docker-machine
-          docker-machine create --driver virtualbox --virtualbox-no-vtx-check vbox
       - run: |
+          docker-machine create --driver virtualbox --virtualbox-no-vtx-check --debug vbox
           eval "$(docker-machine env vbox)"
           docker info
           EXTRA_DOCKER_BUILD_ARGS="--build-arg USE_MAKEFLAGS=\"-k V=0\" --build-arg TARGETS=\"$TARGETS\"" tox -e $TOX_ENV
