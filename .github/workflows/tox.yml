@@ -31,9 +31,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install test prerequisites (Linux host)
+        # from https://docs.docker.com/v17.12/machine/install-machine/
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install python-tox virtualbox
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install curl python-tox virtualbox
+          curl -L https://github.com/docker/machine/releases/download/v0.14.0/docker-machine-`uname -s`-`uname -m` >/tmp/docker-machine && sudo install /tmp/docker-machine /usr/local/bin/docker-machine
           docker-machine create --driver virtualbox vbox
       - run: |
           eval "$(docker-machine env vbox)"
