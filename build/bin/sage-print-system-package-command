@@ -2,8 +2,16 @@
 #
 system=$1
 command=$2
+if [ -z "$system" -o -z "$command" ]; then
+    echo >&2 "usage: $0 {debian|arch|conda|...} {install|remove|...} PACKAGES..."
+    exit 1
+fi
 shift 2
 system_packages="$*"
+if [ -z "$system_packages" ]; then
+    # No command needed to install nothing
+    exit 0
+fi
 shopt -s extglob
 case $system:$command in
     debian*|ubuntu*)
