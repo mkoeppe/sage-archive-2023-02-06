@@ -1,0 +1,28 @@
+From 2df0108b1806e8130b803f97ae64903ded81353e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Julian=20R=C3=BCth?= <julian.rueth@fsfe.org>
+Date: Fri, 5 Apr 2019 15:37:27 +0200
+Subject: [PATCH] Search for arb/flint-arb in configure
+
+since Debian/Ubuntu has renamed that library as arb was already taken
+
+(Backported from master)
+---
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index 59643ce..221ccaf 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -54,7 +54,7 @@ AC_CHECK_HEADERS(flint/flint.h flint/fmpz.h flint/fmpq.h, , [AC_MSG_ERROR([flint
+ AC_CHECK_LIB(flint, fmpz_init, [], [AC_MSG_ERROR([libflint not found])])
+ 
+ AC_CHECK_HEADERS(arb.h arf.h, , [AC_MSG_ERROR([arb header not found])])
+-AC_CHECK_LIB(arb, arb_init, [], [AC_MSG_ERROR([libarb not found])])
++AC_SEARCH_LIBS(arb_init, [arb flint-arb],[], [AC_MSG_ERROR([libarb not found])], [-lmpfr])
+ 
+ AC_LANG_PUSH([C++])
+ AX_CXX_COMPILE_STDCXX(11)
+-- 
+2.24.1.813.gc7a6207591
+
