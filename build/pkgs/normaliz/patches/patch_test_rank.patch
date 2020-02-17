@@ -1,0 +1,14 @@
+Add a missing dual in normaliz 3.8.4
+diff --git a/source/libnormaliz/cone.cpp b/source/libnormaliz/cone.cpp
+index 4e416a75e1..9ba2b2ba40 100644
+--- a/source/libnormaliz/cone.cpp
++++ b/source/libnormaliz/cone.cpp
+@@ -1034,7 +1034,7 @@ void Cone<Integer>::process_multi_input_inner(map<InputType, vector<vector<Integ
+         setComputed(ConeProperty::SupportHyperplanes);
+
+         size_t test_rank=BasisChangePointed.getRank();
+-        if( test_rank != BasisChangePointed.to_sublattice(Generators).rank() ||
++        if( test_rank != BasisChangePointed.to_sublattice_dual(Generators).rank() ||
+                 test_rank != BasisChangePointed.to_sublattice_dual(SupportHyperplanes).rank())
+             throw BadInputException("Precomputed data do not define pointed cone modulo maximal subspace");
+         create_convex_hull_data();
