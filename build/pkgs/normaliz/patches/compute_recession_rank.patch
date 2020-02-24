@@ -1,0 +1,15 @@
+Part of upstream commit "Bug fix affine dim" fbec6fdbfe242f12a3f88d9e37e835f9686becc5
+
+diff --git a/source/libnormaliz/cone.cpp b/source/libnormaliz/cone.cpp
+index 4e416a75..2a5e0f61 100644
+--- a/source/libnormaliz/cone.cpp
++++ b/source/libnormaliz/cone.cpp
+@@ -4284,7 +4284,7 @@ void Cone<Integer>::compute_recession_rank() {
+     compute(ConeProperty::ExtremeRays);
+     vector<key_t> level0key;
+     Matrix<Integer> Help=BasisChangePointed.to_sublattice(ExtremeRays);
+-    vector<Integer> HelpDehom=BasisChangePointed.to_sublattice(Dehomogenization);
++    vector<Integer> HelpDehom=BasisChangePointed.to_sublattice_dual(Dehomogenization);
+     for(size_t i=0; i < Help.nr_of_rows(); ++i){
+         if(v_scalar_product(Help[i],HelpDehom)==0)
+             level0key.push_back(i);
