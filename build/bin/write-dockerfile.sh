@@ -159,6 +159,7 @@ ARG USE_MAKEFLAGS="-k"
 #:toolchain:
 $RUN make \${USE_MAKEFLAGS} base-toolchain
 #:make:
+$RUN make \${USE_MAKEFLAGS} gfortran
 # Avoid running the lengthy testsuite of the following.
 $RUN make \${USE_MAKEFLAGS} cython
 # By default, compile something tricky but that does not take too long. scipy uses BLAS.
