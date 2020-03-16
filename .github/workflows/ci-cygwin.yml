@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 env:
   ## We test all standard and some optional packages
-  TARGETS: build 4ti2 pynormaliz qepcad lrslib cbc csdp latte topcom barvinok isl jupymake sirocco ptest
+  TARGETS: build 4ti2 pynormaliz qepcad lrslib cbc csdp latte_int topcom barvinok isl jupymake sirocco ptest
 
 jobs:
   cygwin:
