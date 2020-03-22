@@ -103,3 +103,4 @@ gitlab-build-docker.log
 #######################
 
 /.tox
+/prefix
