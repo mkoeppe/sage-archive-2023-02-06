@@ -14,13 +14,13 @@ jobs:
       matrix:
         pkgs: [minimal, standard]
         target: [build, ptest]
-      include:
-        - target: build
-          env:
-            TARGETS: SAGE_CHECK=warn build
-        - target: ptest
-          env:
-            TARGETS: SAGE_CHECK=no ptest
+        include:
+          - target: build
+            env:
+              TARGETS: SAGE_CHECK=warn build
+          - target: ptest
+            env:
+              TARGETS: SAGE_CHECK=no ptest
     env:
       LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}
       MAKE: make -j8
