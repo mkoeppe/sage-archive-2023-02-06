@@ -25,7 +25,7 @@ jobs:
       LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}
       MAKE: make -j8
       SAGE_SPKG: sage-spkg -y -o
-      SAGE_CHECK_PACKAGES: !cython,!r,!python3,!python2,!nose,!pathpy,!gap,!cysignals,!linbox,!git,!ppl
+      SAGE_CHECK_PACKAGES: "!cython,!r,!python3,!python2,!nose,!pathpy,!gap,!cysignals,!linbox,!git,!ppl"
     steps:
     - run: |
         git config --global core.autocrlf false
