@@ -33,12 +33,22 @@ SAGE_SPKG_CONFIGURE([openblas], [
        ])
     ], [
       dnl No openblas.pc
-      PKG_CHECK_MODULES([OPENBLAS], [blas cblas lapack], [
+      PKG_CHECK_MODULES([OPENBLAS], [blas], [
         dnl Some system BLAS pc files, but we only accept them if they are provided
         dnl by openblas
         LIBS="$OPENBLAS_LIBS $LIBS"
         CFLAGS="$OPENBLAS_CFLAGS $CFLAGS"
+
         AC_CHECK_FUNC([openblas_get_config], [], [sage_spkg_install_openblas=yes])
+        AC_CHECK_FUNC([cblas_dgemm], [], [sage_spkg_install_openblas=yes])
+        dnl Check all name manglings that AC_FC_FUNC could check based on the
+        dnl characteristics of the Fortran compiler
+        m4_foreach([dgeqrf_mangled], [dgeqrf, dgeqrf_, DGEQRF, DGEQRF_], [
+           AC_CHECK_FUNC(dgeqrf_mangled, [
+              AS_VAR_SET([HAVE_DGEQRF], [yes])
+           ])
+        ])
+        AS_IF([test x$HAVE_DGEQRF = xyes], [], [sage_spkg_install_openblas=yes])
       ], [
         dnl No system BLAS pc files
         sage_spkg_install_openblas=yes
