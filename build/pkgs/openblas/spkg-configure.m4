@@ -1,9 +1,10 @@
 SAGE_SPKG_CONFIGURE([openblas], [
+ dnl CHECK
  SAGE_SPKG_DEPCHECK([gfortran], [
+  SAVE_LIBS="$LIBS"
+  SAVE_CFLAGS="$CFLAGS"
   PKG_CHECK_MODULES([OPENBLAS], [openblas >= 0.2.20], [
-    SAVE_LIBS="$LIBS"
     LIBS="$OPENBLAS_LIBS $LIBS"
-    SAVE_CFLAGS="$CFLAGS"
     CFLAGS="$OPENBLAS_CFLAGS $CFLAGS"
     PKG_CHECK_VAR([OPENBLASPCDIR], [openblas], [pcfiledir], [
        sage_install_blas_pc=yes
@@ -30,9 +31,29 @@ SAGE_SPKG_CONFIGURE([openblas], [
        AC_MSG_WARN([Unable to locate the directory of openblas.pc. This should not happen!])
        sage_spkg_install_openblas=yes
        ])
-    LIBS="$SAVE_LIBS"
-    CFLAGS="$SAVE_CFLAGS"
-    ], [sage_spkg_install_openblas=yes])
+    ], [
+      dnl No openblas.pc
+      PKG_CHECK_MODULES([OPENBLAS], [blas], [
+        dnl Some system BLAS pc files, but we only accept them if they are provided
+        dnl by openblas
+        LIBS="$OPENBLAS_LIBS $LIBS"
+        CFLAGS="$OPENBLAS_CFLAGS $CFLAGS"
+
+        AC_CHECK_FUNC([openblas_get_config], [], [sage_spkg_install_openblas=yes])
+        AC_CHECK_FUNC([cblas_dgemm], [], [sage_spkg_install_openblas=yes])
+        dnl Check all name manglings that AC_FC_FUNC could check based on the
+        dnl characteristics of the Fortran compiler
+        m4_foreach([dgeqrf_mangled], [dgeqrf, dgeqrf_, DGEQRF, DGEQRF_], [
+           AC_CHECK_FUNC(dgeqrf_mangled, [
+              AS_VAR_SET([HAVE_DGEQRF], [yes])
+           ])
+        ])
+        AS_IF([test x$HAVE_DGEQRF = xyes], [], [sage_spkg_install_openblas=yes])
+      ], [
+        dnl No system BLAS pc files
+        sage_spkg_install_openblas=yes
+      ])
+    ])
     AS_IF([test x$sage_spkg_install_openblas != xyes], [
        AC_SUBST([SAGE_SYSTEM_FACADE_PC_FILES])
        AC_SUBST([SAGE_OPENBLAS_PC_COMMAND], ["\$(LN) -sf \"$OPENBLASPCDIR/openblas.pc\" \"\$(@)\""])
@@ -42,12 +63,16 @@ SAGE_SPKG_CONFIGURE([openblas], [
         ])
        ])
     ])
+  LIBS="$SAVE_LIBS"
+  CFLAGS="$SAVE_CFLAGS"
  ])
  ], [
+  dnl REQUIRED-CHECK
   AS_IF([test "x$with_blas" = xopenblas], [
      sage_require_openblas=yes
      sage_require_atlas=no])
   ], [
+  dnl PRE
   AC_MSG_CHECKING([BLAS library])
   AC_ARG_WITH([blas],
   [AS_HELP_STRING([--with-blas=openblas],
