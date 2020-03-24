@@ -12,6 +12,11 @@ env:
 
 jobs:
   cygwin-stage-ii-a:
+    env:
+      STAGE: ii-a
+      TARGETS: cvxopt rpy2
+      LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}-stage-ii-a
+      LOCAL_ARTIFACT_NAME: sage-local-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}-stage-ii-a
 
     runs-on: windows-latest
 
@@ -19,11 +24,6 @@ jobs:
       fail-fast: false
       matrix:
         pkgs: [standard]
-    env:
-      STAGE: ii-a
-      TARGETS: cvxopt rpy2
-      LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}-stage-${{ env.STAGE }}
-
     steps:
     - run: |
         git config --global core.autocrlf false
@@ -60,7 +60,7 @@ jobs:
     - uses: actions/upload-artifact@v1
       with:
         path: local
-        name: sage-local-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}-stage-${{ env.STAGE }}
+        name: ${{ env.LOCAL_ARTIFACT_NAME }}
     - name: Prepare logs artifact
       shell: bash
       run: |
@@ -80,6 +80,11 @@ jobs:
       if: always()
 
   cygwin-stage-ii-b:
+    env:
+      STAGE: ii-b
+      TARGETS: singular maxima gap pari
+      LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}-stage-ii-b
+      LOCAL_ARTIFACT_NAME: sage-local-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}-stage-ii-b
 
     runs-on: windows-latest
 
@@ -87,11 +92,6 @@ jobs:
       fail-fast: false
       matrix:
         pkgs: [standard]
-    env:
-      STAGE: ii-b
-      TARGETS: singular maxima gap pari
-      LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}-stage-${{ env.STAGE }}
-
     steps:
     - run: |
         git config --global core.autocrlf false
@@ -128,7 +128,7 @@ jobs:
     - uses: actions/upload-artifact@v1
       with:
         path: local
-        name: sage-local-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}-stage-${{ env.STAGE }}
+        name: ${{ env.LOCAL_ARTIFACT_NAME }}
     - name: Prepare logs artifact
       shell: bash
       run: |
@@ -149,19 +149,20 @@ jobs:
 
       
   cygwin-stage-iii:
-    runs-on: windows-latest
+    env:
+      STAGE: iii
+      TARGETS: build ptest
+      LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}-stage-iii
+      LOCAL_ARTIFACT_NAME: sage-local-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}-stage-iii
 
     needs: [cygwin-stage-ii-a, cygwin-stage-ii-b]
+
+    runs-on: windows-latest
 
     strategy:
       fail-fast: false
       matrix:
         pkgs: [standard]
-    env:
-      STAGE: iii
-      TARGETS: build ptest
-      LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}-stage-${{ env.STAGE }}
-
     steps:
     - run: |
         git config --global core.autocrlf false
@@ -206,7 +207,7 @@ jobs:
     - uses: actions/upload-artifact@v1
       with:
         path: local
-        name: sage-local-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}-stage-${{ env.STAGE }}
+        name: ${{ env.LOCAL_ARTIFACT_NAME }}
     - name: Print out logs for immediate inspection
       # The markup in the output is a GitHub Actions logging command
       # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/development-tools-for-github-actions
