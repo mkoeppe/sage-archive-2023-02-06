@@ -52,7 +52,7 @@ EOF
 ARG BASE_IMAGE=fedora:latest
 FROM \${BASE_IMAGE}
 EOF
-        INSTALL="yum install -y"
+        INSTALL="yum install --nogpg -y"
         ;;
     slackware*)
         # https://docs.slackware.com/slackbook:package_management
