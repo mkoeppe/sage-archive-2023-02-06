@@ -6,8 +6,6 @@ env:
   MAKE: make -j8
   SAGE_CHECK: warn
   SAGE_CHECK_PACKAGES: "!cython,!r,!python3,!python2,!nose,!pathpy,!gap,!cysignals,!linbox,!git,!ppl"
-  LOCAL_ARTIFACT_NAME: sage-local-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}
-  LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}
 
 jobs:
   cygwin-stage-ii-a:
@@ -15,6 +13,8 @@ jobs:
       STAGE: ii-a
       TARGETS: cddlib
         #cvxopt rpy2
+      LOCAL_ARTIFACT_NAME: sage-local-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}
+      LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}
 
     runs-on: windows-latest
 
@@ -83,6 +83,8 @@ jobs:
       STAGE: ii-b
       TARGETS: ppl
       #singular maxima gap pari
+      LOCAL_ARTIFACT_NAME: sage-local-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}
+      LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}
 
     runs-on: windows-latest
 
@@ -153,6 +155,8 @@ jobs:
       PREVIOUS_STAGES: ii-*
       TARGETS: cddlib ppl setuptools
         #build ptest
+      LOCAL_ARTIFACT_NAME: sage-local-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}
+      LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}
 
     needs: [cygwin-stage-ii-a, cygwin-stage-ii-b]
 
