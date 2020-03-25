@@ -51,13 +51,13 @@ jobs:
     - name: Prepare sage-local artifact
       shell: bash
       run: |
-        tar cf sage-local-$STAGE.tar local
+        tar cf sage-local-${{ env.STAGE }}.tar local
       if: always()
     - uses: actions/upload-artifact@v2-preview
       # upload-artifact@v2-preview does not support whitespace in file names.
       # so we tar up the directory ourselves
       with:
-        path: sage-local-$STAGE.tar
+        path: sage-local-${{ env.STAGE }}.tar
         name: ${{ env.LOCAL_ARTIFACT_NAME }}
       if: always()
     - name: Prepare logs artifact
@@ -123,11 +123,11 @@ jobs:
       # so we tar up the directory ourselves
       shell: bash
       run: |
-        tar cf sage-local-$STAGE.tar local
+        tar cf sage-local-${{ env.STAGE }}.tar local
       if: always()
     - uses: actions/upload-artifact@v2-preview
       with:
-        path: sage-local-$STAGE.tar
+        path: sage-local-${{ env.STAGE }}.tar
         name: ${{ env.LOCAL_ARTIFACT_NAME }}
       if: always()
     - name: Prepare logs artifact
@@ -205,11 +205,11 @@ jobs:
       # so we tar up the directory ourselves
       shell: bash
       run: |
-        tar cf sage-local-$STAGE.tar local
+        tar cf sage-local-${{ env.STAGE }}.tar local
       if: always()
     - uses: actions/upload-artifact@v2-preview
       with:
-        path: sage-local-$STAGE.tar
+        path: sage-local-${{ env.STAGE }}.tar
         name: ${{ env.LOCAL_ARTIFACT_NAME }}
       if: always()
     - name: Print out logs for immediate inspection
