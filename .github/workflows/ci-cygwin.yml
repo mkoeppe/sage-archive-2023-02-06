@@ -192,7 +192,7 @@ jobs:
         name: ${{ env.LOCAL_ARTIFACT_NAME }}
     - name: Extract sage-local artifact
       run: |
-        C:\\tools\\cygwin\\bin\\bash -l -c 'ls -l sage-local*.tar; for a in sage-local-{{ env.PREVIOUS_STAGES }}; do echo Extracting $a; tar xf $a; done; ls -l local local/var/lib/sage/installed/'
+        C:\\tools\\cygwin\\bin\\bash -l -c 'ls -l sage-local*.tar; for a in sage-local-${{ env.PREVIOUS_STAGES }}; do echo Extracting $a; tar xf $a; done; ls -l local local/var/lib/sage/installed/'
     - name: configure
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -c 'export PATH=/usr/local/bin:/usr/bin && cd $(cygpath -u "$GITHUB_WORKSPACE") && ./configure'
