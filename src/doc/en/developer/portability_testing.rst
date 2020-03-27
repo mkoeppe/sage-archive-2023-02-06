@@ -44,10 +44,21 @@ responding to the announcements.
 Testing Sage on a different platform using Docker
 =================================================
 
-`Docker <https://www.docker.com>`_ is a popular virtualization software,
-running Linux operating system images in containers on a shared Linux
-kernel.  Using Docker Desktop for Mac and Windows, the containers can
-also be run on these platforms.
+`Docker <https://www.docker.com>`_ is a popular virtualization
+software, running Linux operating system images ("Docker images") in
+containers on a shared Linux kernel.  These containers can be run
+using a Docker client on your Linux, Mac, or Windows box, as well as
+on various cloud services.
+
+To get started, you need to install a `Docker client
+<https://docs.docker.com/install/>`.  The clients are available for
+Linux, Mac, and Windows.  The clients for the latter are known as
+"Docker Desktop".
+
+All examples in this section were obtained using Docker Desktop for
+Mac; but the `command-line user interface
+<https://docs.docker.com/engine/reference/commandline/cli/>` for the
+other platforms is identical.
 
 All major Linux distributions provide ready-to-use Docker images,
 which are published via `Docker Hub <https://hub.docker.com>`_.  For
@@ -184,6 +195,10 @@ on our container to install the necessary build prerequisites::
   ...
   Done.
 
+(The Sage `Installation Guide <../installation/index.html>`_ also
+provides such command lines for some distributions; these are
+automatically generated from the database of package names.)
+
 Now we can start the build::
 
   root@39d693b2a75d:/sage# ./configure 
@@ -277,7 +292,10 @@ have no access to the worktree::
 The image ``ubuntu-latest-minimal-17`` can be run in as many
 containers as we want and can also be shared with other users or
 developers so that they can run it in a container on their machine.
-(See the Docker documentation on how to do this.)
+(See the Docker documentation on how to `share images on Docker Hub
+<https://docs.docker.com/get-started/part3/>` or to `save images to a
+tar archive
+<https://docs.docker.com/engine/reference/commandline/save/>`.)
 
 This facilitates collaboration on fixing portability bugs of the Sage
 distribution.  After reproducing a portability bug on a container,
@@ -333,7 +351,7 @@ Then, to bootstrap and configure...::
   ADD src/bin src/bin
   ADD src/Makefile.in src/Makefile.in
   ARG EXTRA_CONFIGURE_ARGS=""
-  RUN ./configure --enable-build-as-root --enable-option-checking ${EXTRA_CONFIGURE_ARGS} || (cat config.log; exit 1)
+  RUN ./configure --enable-build-as-root ${EXTRA_CONFIGURE_ARGS} || (cat config.log; exit 1)
 
 Finally, to build and test...::
 
@@ -456,9 +474,7 @@ might not work on all platforms, ``surf``, which was marked as
   [surf-1.0.6-gcc6] Attempting to download package surf-1.0.6-gcc6.tar.gz from mirrors
   ...
   [surf-1.0.6-gcc6] http://mirrors.mit.edu/sage/spkg/upstream/surf/surf-1.0.6-gcc6.tar.gz
-  [surf-1.0.6-gcc6] [......................................................................]
-  [surf-1.0.6-gcc6] surf-1.0.6-gcc6
-  [surf-1.0.6-gcc6] ====================================================
+  ...
   [surf-1.0.6-gcc6] Setting up build directory for surf-1.0.6-gcc6
   ...
   [surf-1.0.6-gcc6] /usr/bin/ld: cannot find -lfl
@@ -466,9 +482,7 @@ might not work on all platforms, ``surf``, which was marked as
   [surf-1.0.6-gcc6] Makefile:504: recipe for target 'surf' failed
   [surf-1.0.6-gcc6] make[3]: *** [surf] Error 1
   ...
-  [surf-1.0.6-gcc6] ************************************************************************
   [surf-1.0.6-gcc6] Error installing package surf-1.0.6-gcc6
-  [surf-1.0.6-gcc6] ************************************************************************
   ...
   Makefile:2088: recipe for target '/sage/local/var/lib/sage/installed/surf-1.0.6-gcc6' failed
   make[1]: *** [/sage/local/var/lib/sage/installed/surf-1.0.6-gcc6] Error 1
@@ -523,14 +537,8 @@ create an image from the container::
   root@2d9ac65f4572:/sage# (cd /sage/local/var/tmp/sage/build/surf* && /sage/sage --buildsh)
 
   Starting subshell with Sage environment variables set.  Don't forget
-  to exit when you are done.  Beware:
-   * Do not do anything with other copies of Sage on your system.
-   * Do not use this for installing Sage packages using "sage -i" or for
-     running "make" at Sage's root directory.  These should be done
-     outside the Sage shell.
-
-  Bypassing shell configuration files...
-
+  to exit when you are done.
+  ...
   Note: SAGE_ROOT=/sage
   (sage-buildsh) root@2d9ac65f4572:surf-1.0.6-gcc6$ ls /usr/lib/libfl*
   /usr/lib/libflint-2.5.2.so  /usr/lib/libflint-2.5.2.so.13.5.2  /usr/lib/libflint.a  /usr/lib/libflint.so
@@ -546,8 +554,7 @@ create an image from the container::
   ...
     /usr/bin/install -c  surf /sage/local/bin/surf
    /usr/bin/install -c -m 644 ./surf.1 /sage/local/share/man/man1/surf.1
-  make[3]: Leaving directory '/sage/local/var/tmp/sage/build/surf-1.0.6-gcc6/src'
-  make[2]: Leaving directory '/sage/local/var/tmp/sage/build/surf-1.0.6-gcc6/src'
+  ...
   make[1]: Leaving directory '/sage/local/var/tmp/sage/build/surf-1.0.6-gcc6/src'
   (sage-buildsh) root@2d9ac65f4572:surf-1.0.6-gcc6$ exit
   root@2d9ac65f4572:/sage# exit
@@ -561,12 +568,33 @@ Symbolic names of system configurations
 
 To facilitate communication about host system configurations and for
 automating testing, Sage defines symbolic names composed of several
-`Tox "factors"
-<https://tox.readthedocs.io/en/latest/config.html#complex-factor-conditions>`_
-in the file ``$SAGE_ROOT/tox.ini``.
 
-The **system factor** describes a base operating system
-image.
+
+
+Automatic Docker-based build testing using tox
+----------------------------------------------
+
+`tox <https://tox.readthedocs.io/en/latest/>` is a Python package that
+is widely used for automating tests of Python projects.
+
+Install ``tox`` for use with your system Python, for example using::
+
+  [mkoeppe@sage sage]$ pip install --user tox
+
+A tox "environment" is identified by a symbolic name composed of
+several `Tox "factors"
+<https://tox.readthedocs.io/en/latest/config.html#complex-factor-conditions>`_,
+which are defined in the file ``$SAGE_ROOT/tox.ini``.
+
+The **technology** factor describes how the environment is run:
+
+- ``docker`` builds a Docker image as described above.
+
+- ``local`` runs testing on the host OS instead.  We explain this
+  technology in a later section.
+
+The next two factors determine the host system configuration: The
+**system factor** describes a base operating system image.
 
 - Examples are ``ubuntu-focal``, ``debian-buster``,
   ``archlinux-latest``, ``fedora-30``, ``slackware-14.2``,
@@ -593,34 +621,18 @@ installed on the system before building Sage:
 The factors are connected by a hyphen to name a system configuration,
 such as ``debian-buster-standard`` and ``centos-7-i386-minimal``.
 
-
-Automatic Docker-based build testing using tox
-----------------------------------------------
-
-``tox`` is a Python package that is widely used for automating tests of
-Python projects.
-
-Install ``tox`` for use with your system Python, for example using::
-
-  [mkoeppe@sage sage]$ pip install --user tox
-
-A tox "environment" is identified by a name composed of several
-factors.  In addition to the system factor and the packages factor
-that we introduced above, there are the following factors:
-
-The **technology** factor describes how the environment is run:
-
-- ``docker`` builds a Docker image as described above.
-
-- ``local`` runs testing on the host OS instead.  See below.
-
-The **configuration** factor (allowed to be empty):
+Finally, the **configuration** factor (which is allowed to be empty)
+controls how the ``configure`` script is run.
 
 - ``python2`` adds the argument ``--with-python=2`` to the
   ``configure`` run.
 
-The factors are connected by a hyphen to name a tox environment.  To
-run an environment::
+The factors are connected by a hyphen to name a tox environment.  (The
+order of the factors does not matter; however, for consistency and
+because the ordered name is used for caching purposes, we recommend to
+use the factors in the listed order.)
+
+To run an environment::
 
   [mkoeppe@sage sage]$ tox -e docker-slackware-14.2-minimal
   [mkoeppe@sage sage]$ tox -e docker-ubuntu-bionic-standard-python2
@@ -662,50 +674,45 @@ positional arguments (separated from tox options by ``--``)::
   local-direct create: /Users/mkoeppe/.../worktree-local/.tox/local-direct
   local-direct run-test-pre: PYTHONHASHSEED='2211987514'
   ...
-  rm -rf config configure build/make/Makefile-auto.in
-  rm -f src/doc/en/installation/*.txt
-  src/doc/bootstrap:48: installing src/doc/en/installation/debian.txt and src/doc/en/installation/debian-optional.txt
-  src/doc/bootstrap:48: installing src/doc/en/installation/fedora.txt and src/doc/en/installation/fedora-optional.txt
-  src/doc/bootstrap:48: installing src/doc/en/installation/cygwin.txt and src/doc/en/installation/cygwin-optional.txt
+  src/doc/bootstrap:48: installing src/doc/en/installation/debian.txt...
   bootstrap:69: installing 'config/config.rpath'
   configure.ac:328: installing 'config/compile'
   configure.ac:113: installing 'config/config.guess'
-  configure.ac:113: installing 'config/config.sub'
-  configure.ac:68: installing 'config/install-sh'
-  configure.ac:68: installing 'config/missing'
+  ...
   checking for a BSD-compatible install... /usr/bin/install -c
   checking whether build environment is sane... yes
   ...
-  sage-logger -p 'sage-spkg -y -o  ratpoints-2.1.3.p5' '/Users/mkoeppe/.../worktree-local/logs/pkgs/ratpoints-2.1.3.p5.log'
-  [ratpoints-2.1.3.p5] installing. Log file: /Users/mkoeppe/.../worktree-local/logs/pkgs/ratpoints-2.1.3.p5.log
+  sage-logger -p 'sage-spkg -y -o  ratpoints-2.1.3.p5' '.../worktree-local/logs/pkgs/ratpoints-2.1.3.p5.log'
+  [ratpoints-2.1.3.p5] installing. Log file: .../worktree-local/logs/pkgs/ratpoints-2.1.3.p5.log
     [ratpoints-2.1.3.p5] successfully installed.
-    [ratpoints-2.1.3.p5] build times: 
   ...
     local-direct: commands succeeded
     congratulations :)
 
 Let's investigate what happened here::
 
-  [mkoeppe@sage worktree-local]$ ls -l
+  [mkoeppe@sage worktree-local]$ ls -la
   total 2576
-  -rw-r--r--   1 mkoeppe  staff   66501 Mar 26 20:34 COPYING.txt
+  drwxr-xr-x  35 mkoeppe  staff    1120 Mar 26 22:20 .
+  drwxr-xr-x  63 mkoeppe  staff    2016 Mar 27 09:35 ..
+  ...
+  lrwxr-xr-x   1 mkoeppe  staff      10 Mar 26 20:34 .dockerignore -> .gitignore
+  -rw-r--r--   1 mkoeppe  staff      74 Mar 26 20:34 .git
+  ...
+  -rw-r--r--   1 mkoeppe  staff    1212 Mar 26 20:41 .gitignore
+  ...
+  drwxr-xr-x   7 mkoeppe  staff     224 Mar 26 22:11 .tox
+  ...
   -rw-r--r--   1 mkoeppe  staff    7542 Mar 26 20:41 Makefile
-  -rw-r--r--   1 mkoeppe  staff   19862 Mar 26 20:34 README.md
-  -rw-r--r--   1 mkoeppe  staff      53 Mar 26 20:34 VERSION.txt
-  -rw-r--r--   1 mkoeppe  staff  133587 Mar 26 20:45 aclocal.m4
-  drwxr-xr-x   7 mkoeppe  staff     224 Mar 26 20:45 autom4te.cache
-  -rwxr-xr-x   1 mkoeppe  staff    7583 Mar 26 20:34 bootstrap
-  drwxr-xr-x  11 mkoeppe  staff     352 Mar 26 20:34 build
-  -rw-r--r--   1 mkoeppe  staff     223 Mar 26 20:34 condarc.yml
-  drwxr-xr-x   8 mkoeppe  staff     256 Mar 26 20:45 config
-  lrwxr-xr-x   1 mkoeppe  staff     114 Mar 26 20:45 config.log -> /Users/mkoeppe/.../worktree-local/.tox/local-direct/log/config.log
+  ...
+  lrwxr-xr-x   1 mkoeppe  staff     114 Mar 26 20:45 config.log -> .tox/local-direct/log/config.log
   -rwxr-xr-x   1 mkoeppe  staff   90411 Mar 26 20:46 config.status
   -rwxr-xr-x   1 mkoeppe  staff  887180 Mar 26 20:45 configure
   -rw-r--r--   1 mkoeppe  staff   17070 Mar 26 20:41 configure.ac
-  drwxr-xr-x   8 mkoeppe  staff     256 Mar 26 20:34 docker
-  lrwxr-xr-x   1 mkoeppe  staff     103 Mar 26 20:45 logs -> /Users/mkoeppe/.../worktree-local/.tox/local-direct/log
+  ...
+  lrwxr-xr-x   1 mkoeppe  staff     103 Mar 26 20:45 logs -> .tox/local-direct/log
   drwxr-xr-x  24 mkoeppe  staff     768 Mar 26 20:45 m4
-  lrwxr-xr-x   1 mkoeppe  staff     105 Mar 26 20:45 prefix -> /Users/mkoeppe/.../worktree-local/.tox/local-direct/local
+  lrwxr-xr-x   1 mkoeppe  staff     105 Mar 26 20:45 prefix -> .tox/local-direct/local
   -rwxr-xr-x   1 mkoeppe  staff    4868 Mar 26 20:34 sage
   drwxr-xr-x  16 mkoeppe  staff     512 Mar 26 20:46 src
   -rw-r--r--   1 mkoeppe  staff   13478 Mar 26 20:41 tox.ini
@@ -757,18 +764,77 @@ locations to be a bug of the Sage distribution, which should be
 reported and fixed on a ticket.
 
 
-..
-   Automatic build testing on macOS with best-effort isolated installation of Homebrew
-   -----------------------------------------------------------------------------------
+Automatic build testing on macOS with a best-effort isolated installation of Homebrew
+-------------------------------------------------------------------------------------
 
-   adds toxenvs local-homebrew-macos-{minimal,standard} for testing with (best-effort) isolated installations of homebrew on macOS (not using docker).
+XCode on macOS does not provide the prerequisites for bootstrapping
+the Sage distribution.  A good way to install them is using the
+Homebrew package manager.
 
-   To test:
+In fact, Sage provides a tox environment that automatically installs
+an isolated copy of Homebrew with all prerequisites for bootstrapping::
 
+  [mkoeppe@sage worktree-local]$ tox -e local-homebrew-macos-minimal -- lrslib
+  local-homebrew-macos-minimal create: .../worktree-local/.tox/local-homebrew-macos-minimal
+  local-homebrew-macos-minimal run-test-pre: PYTHONHASHSEED='4246149402'
+  ...
+  Initialized empty Git repository in .../worktree-local/.tox/local-homebrew-macos-minimal/homebrew/.git/
+  ...
+  Tapped 2 commands and 4942 formulae (5,205 files, 310.7MB).
+  ==> Downloading https://ftp.gnu.org/gnu/gettext/gettext-0.20.1.tar.xz
+  ...
+  ==> Pouring autoconf-2.69.catalina.bottle.4.tar.gz
+  ...
+  ==> Pouring pkg-config-0.29.2.catalina.bottle.1.tar.gz
+    .../worktree-local/.tox/local-homebrew-macos-minimal/homebrew/Cellar/pkg-config/0.29.2: 11 files, 623.4KB
+  ==> Caveats
+  ==> gettext
+  gettext is keg-only, which means it was not symlinked into .../worktree-local/.tox/local-homebrew-macos-minimal/homebrew,
+  because macOS provides the BSD gettext library & some software gets confused if both are in the library path.
 
-   This is currently only
-        implemented for ``local-homebrew-macos``; see below.
-    
+  If you need to have gettext first in your PATH run:
+    echo 'export PATH=".../worktree-local/.tox/local-homebrew-macos-minimal/homebrew/opt/gettext/bin:$PATH"' >> ~/.bash_profile
+
+  For compilers to find gettext you may need to set:
+    export LDFLAGS="-L.../worktree-local/.tox/local-homebrew-macos-minimal/homebrew/opt/gettext/lib"
+    export CPPFLAGS="-I.../worktree-local/.tox/local-homebrew-macos-minimal/homebrew/opt/gettext/include"
+  ...
+  local-homebrew-macos-minimal run-test: commands[0] | bash -c 'export PATH=.../worktree-local/.tox/local-homebrew-macos-minimal/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin && . .homebrew-build-env && ./bootstrap && ./configure --prefix=.../worktree-local/.tox/local-homebrew-macos-minimal/local    && make -k V=0 ... lrslib'
+  ...
+  bootstrap:69: installing 'config/config.rpath'
+  ...
+  checking for a BSD-compatible install... /usr/bin/install -c
+  checking whether build environment is sane... yes
+  ...
+  configure: notice: the following SPKGs did not find equivalent system packages: arb cbc cliquer ... tachyon xz yasm zeromq
+  checking for the package system in use... homebrew
+  configure: hint: installing the following system packages is recommended and may avoid building some of the above SPKGs from source:
+  configure:   $ brew install cmake gcc gsl mpfi ninja openblas gpatch r readline xz yasm zeromq
+  ...
+  sage-logger -p 'sage-spkg -y -o  lrslib-062+autotools-2017-03-03.p1' '.../worktree-local/logs/pkgs/lrslib-062+autotools-2017-03-03.p1.log'
+  [lrslib-062+autotools-2017-03-03.p1] installing. Log file: .../worktree-local/logs/pkgs/lrslib-062+autotools-2017-03-03.p1.log
+    [lrslib-062+autotools-2017-03-03.p1] successfully installed.
+  ...
+    local-homebrew-macos-minimal: commands succeeded
+    congratulations :)
+  
+The tox environment uses the subdirectory ``homebrew`` of the
+environment directory ``.tox/local-homebrew-macos-minimal`` as the
+Homebrew prefix.  This installation does not interact in any way with
+a Homebrew installation in ``/usr/local`` that you may have.
+
+The test script sets the ``PATH`` to the ``bin`` directory of the
+Homebrew prefix, followed by ``/usr/bin:/bin:/usr/sbin:/sbin``.  It
+then uses the script ``$SAGE_ROOT/.homebrew-build-env`` to set
+environment variables so that Sage's build scripts will find
+"keg-only" packages such as ``gettext``.
+
+The ``local-homebrew-macos-standard`` environment additionally
+installs (in its separate isolated copy of Homebrew) all Homebrew
+packages known to Sage for which the ``spkg-configure.m4`` mechanism
+is implemented; this is similar to the ``docker-standard`` tox
+environments described earlier.
+
 
 Automatic parallel tox runs on GitHub Actions
 ---------------------------------------------
@@ -789,6 +855,20 @@ RAM memory and 14 GB of SSD disk space, cf.
 and has a time limit of 6h per job. This is just barely enough for a
 typical ``minimal`` build followed by ``make ptest`` to succeed; and
 plenty of time for a typical ``standard`` build to succeed.
+
+Build logs become available as "artifacts" when all jobs of the
+workflow have finished.  Each job generates one tarball.
+"Annotations" highlight certain top-level errors or warnings issued
+during the build.
+
+The following procedure seems to work well for testing branches during
+development.  Create a branch from a recent beta release that contains
+the default GitHub Actions configuration; name it ``TESTER``, say.
+Edit ``$SAGE_ROOT/.github/workflows/tox.yml`` to include the system
+configurations that you wish to test.  Commit and push the branch to
+your GitHub fork of sage.  Next, push your development branch to your
+GitHub repository and create a pull request against the ``TESTER``
+branch.  This will trigger the GitHub Actions workflow.
 
 
 ..
