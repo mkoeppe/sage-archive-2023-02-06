@@ -27,15 +27,17 @@ env:
   TARGETS: build ptest
 
 jobs:
-  tox-local-homebrew-macos:
+  tox-local-macos:
+
     runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
+        tox_system_factor: [homebrew-macos, conda-forge-macos]
         tox_packages_factor: [minimal, standard]
     env:
-      TOX_ENV: local-homebrew-macos-${{ matrix.tox_packages_factor }}
-      LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-tox-local-homebrew-macos-${{ matrix.tox_packages_factor }}
+      TOX_ENV: local-${{ matrix.tox_system_factor }}-${{ matrix.tox_packages_factor }}
+      LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-tox-local-${{ matrix.tox_system_factor }}-${{ matrix.tox_packages_factor }}
     steps:
       - uses: actions/checkout@v2
       - name: Install test prerequisites
