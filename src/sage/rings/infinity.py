@@ -719,7 +719,10 @@ class UnsignedInfinityRing_class(Singleton, Ring):
 
         # Handle all ways to represent infinity first
         if isinstance(x, InfinityElement):
-            return self.gen()
+            if x.parent() is self:
+                return x
+            else:
+                return self.gen()
         elif isinstance(x, float):
             if x in [float('+inf'), float('-inf')]:
                 return self.gen()

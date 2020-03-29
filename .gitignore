@@ -13,7 +13,6 @@
 /config.log
 /config.status
 /configure
-/conftest*
 
 /m4/sage_spkg_configures.m4
 

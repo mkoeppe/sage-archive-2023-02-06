@@ -383,6 +383,7 @@ class LaurentSeriesRing(UniqueRepresentation, CommutativeRing):
         - ``prec`` -- (default: ``infinity``) the precision of the series
             as an integer.
 
+
         EXAMPLES::
 
             sage: R.<u> = LaurentSeriesRing(Qp(5, 10))
@@ -392,13 +393,11 @@ class LaurentSeriesRing(UniqueRepresentation, CommutativeRing):
             sage: R(t + t^2 + O(t^3), prec=2)
             (1 + O(5^10))*u + O(u^2)
 
-        Coercing an element into its own parent produces that element
-        again, unless a different ``n`` or ``prec`` is given::
+        Note that coercing an element into its own parent just produces
+        that element again (since Laurent series are immutable)::
 
             sage: u is R(u)
             True
-            sage: R(u, n=3, prec=7)
-            (1 + O(5^10))*u^4 + O(u^7)
 
         Rational functions are accepted::
 

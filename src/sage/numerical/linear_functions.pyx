@@ -688,7 +688,10 @@ cdef class LinearFunctionsParent_class(Parent):
             False
         """
         if is_LinearFunction(x):
-            return LinearFunction(self, (<LinearFunction>x)._f)
+            if x.parent() is self:
+                return x
+            else:
+                return LinearFunction(self, (<LinearFunction>x)._f)
         return LinearFunction(self, x)
 
     cpdef _coerce_map_from_(self, R):

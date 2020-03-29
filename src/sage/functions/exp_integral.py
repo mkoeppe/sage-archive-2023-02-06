@@ -427,7 +427,7 @@ class Function_log_integral(BuiltinFunction):
 
     """
     def __init__(self):
-        r"""
+        """
         See the docstring for ``Function_log_integral``.
 
         EXAMPLES::
@@ -438,16 +438,9 @@ class Function_log_integral(BuiltinFunction):
             li(x)
             sage: log_integral(x)._fricas_init_()
             'li(x)'
-
-        TESTS:
-
-        Verify that :trac:`28917` is fixed::
-
-            sage: latex(log_integral(x))
-            \operatorname{log\_integral}\left(x\right)
         """
         BuiltinFunction.__init__(self, "log_integral", nargs=1,
-                                 latex_name=r'\operatorname{log\_integral}',
+                                 latex_name=r'log_integral',
                                  conversions=dict(maxima='expintegral_li',
                                                   sympy='li',
                                                   fricas='li'))
@@ -622,8 +615,8 @@ class Function_log_integral_offset(BuiltinFunction):
     """
 
     def __init__(self):
-        r"""
-        See the docstring for ``Function_log_integral_offset``.
+        """
+        See the docstring for ``Function_log_integral-offset``.
 
         EXAMPLES::
 
@@ -632,16 +625,9 @@ class Function_log_integral_offset(BuiltinFunction):
             sage: log_integral_offset(x, hold=True)._sympy_()
             Li(x)
 
-        TESTS:
-
-        Verify that the problem described in :trac:`28917` no longer appears here::
-
-            sage: latex(log_integral_offset)
-            \operatorname{log\_integral\_offset}
-
         """
         BuiltinFunction.__init__(self, "log_integral_offset", nargs=1,
-                                 latex_name=r'\operatorname{log\_integral\_offset}',
+                                 latex_name=r'log_integral_offset',
                                  conversions=dict(sympy='Li'))
 
     def _eval_(self,z):

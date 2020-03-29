@@ -415,7 +415,10 @@ class LinearTensorParent_class(Parent):
         """
         M = self.free_module()
         if is_LinearTensor(x):
-            x = x.dict()
+            if x.parent() is self:
+                return x
+            else:
+                x = x.dict()
         elif is_LinearFunction(x):
             x = dict([key, self._convert_constant(value)] for key, value in x.dict().items())
         elif isinstance(x, dict):
