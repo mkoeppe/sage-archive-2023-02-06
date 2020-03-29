@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize]
 
 env:
-  MAKE: make -j8
+  MAKE: make -j8 --debug=verbose
   SAGE_NUM_THREADS: 3
   SAGE_CHECK: warn
   SAGE_CHECK_PACKAGES: "!cython,!r,!python3,!python2,!nose,!pathpy,!gap,!cysignals,!linbox,!git,!ppl"
