@@ -25,8 +25,8 @@ env:
   ## We test everything BLAS-related and other problematic packages
   #TARGETS: cbc csdp fflas_ffpack gsl iml numpy scipy r suitesparse cvxopt rpy2 ecl maxima fpylll linbox
   #TARGETS: build ptest
-  TARGETS: numpy 4ti2 pynormaliz qepcad lrslib latte_int topcom barvinok isl
-
+  TARGETS: 4ti2 pynormaliz qepcad lrslib latte_int topcom barvinok isl qhull
+  
 jobs:
   tox:
     runs-on: ubuntu-latest
