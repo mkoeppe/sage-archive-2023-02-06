@@ -15,7 +15,7 @@ jobs:
   cygwin-stage-i-a:
     env:
       STAGE: i-a
-      TARGETS: openblas gsl
+      TARGETS: pynormaliz qepcad lrslib latte_int topcom barvinok
       LOCAL_ARTIFACT_NAME: sage-local-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}
       LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}
 
@@ -85,7 +85,7 @@ jobs:
   cygwin-stage-i-b:
     env:
       STAGE: i-b
-      TARGETS: cython setuptools_scm
+      TARGETS: barvinok isl
       LOCAL_ARTIFACT_NAME: sage-local-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}
       LOGS_ARTIFACT_NAME: logs-commit-${{ github.sha }}-cygwin-${{ matrix.pkgs }}
 
