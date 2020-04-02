@@ -21,7 +21,10 @@ from six.moves import zip
 
 from . import classical
 import sage.libs.lrcalc.lrcalc as lrcalc
-
+from sage.misc.all import prod
+from sage.rings.infinity import infinity
+from sage.functions.other import factorial
+from sage.combinat.tableau import StandardTableaux
 
 class SymmetricFunctionAlgebra_schur(classical.SymmetricFunctionAlgebra_classical):
     def __init__(self, Sym):
@@ -570,6 +573,210 @@ class SymmetricFunctionAlgebra_schur(classical.SymmetricFunctionAlgebra_classica
             """
             condition = lambda part: len(part) > n
             return self._expand(condition, n, alphabet)
+
+        def principal_specialization(self, n=infinity, q=None):
+            r"""
+            Return the principal specialization of the symmetric function.
+
+            The principal specialization of order `n` is the ring
+            homomorphism given by setting `x_i = q^i` for `i \in
+            \{0,\dots,n-1\}` and `x_i = 0` for `i\geq n`, see Section
+            7.8 of [EnumComb2]_.
+
+            The stable principal specialization is the ring
+            homomorphism given by setting `x_i = q^i` for all `i`.
+            Note that setting `q = 1` in the stable principal
+            specialization is an invalid operation.
+
+            INPUT:
+
+            - ``n`` (default: ``infinity``) -- a nonnegative integer or
+              ``infinity``, specifying whether to compute the principal
+              specialization of order ``n`` or the stable principal
+              specialization.
+
+            - ``q`` (default: ``None``) -- the value to use for `q`,
+              the default is to create a ring (or fraction field) of
+              polynomials in ``q`` over the coefficient ring.
+
+            For `q=1` we use the formula from Corollary 7.21.4 of [EnumComb2]_
+
+            .. MATH::
+
+                ps_{n,1}(s_\lambda) = \prod_{u\in\lambda} (n+c(u)) / h(u),
+
+            where `h(u)` is the hook length of a cell `u` in `\lambda`.
+
+            For `n=infinity` we use the formula from Corollary 7.21.3 of [EnumComb2]_
+
+            .. MATH::
+
+                ps_q(s_\lambda) = q^{\sum_i i\lambda_i} / \prod_{u\in\lambda} (1-q^{h(u)}).
+
+            Otherwise, we use the formula  from Corollary 7.21.2 of [EnumComb2]_,
+
+            .. MATH::
+
+                ps_{n,q}(s_\lambda) = q^{\sum_i i\lambda_i}
+                                      \prod_{u\in\lambda} (1-q^{n+c(u)}/(1-q^{h(u)}).
+
+            EXAMPLES::
+
+                sage: s = SymmetricFunctions(QQ).s()
+                sage: x = s[2]
+                sage: x.principal_specialization(3)
+                q^4 + q^3 + 2*q^2 + q + 1
+
+                sage: x = 3*s[2,2] + 2*s[1] + 1
+                sage: x.principal_specialization(3, q=var("q"))
+                3*(q^4 - 1)*(q^3 - 1)*q^2/((q^2 - 1)*(q - 1)) + 2*(q^3 - 1)/(q - 1) + 1
+
+                sage: x.principal_specialization(q=var("q"))
+                -2/(q - 1) + 3*q^2/((q^3 - 1)*(q^2 - 1)^2*(q - 1)) + 1
+
+            TESTS::
+
+                sage: s.zero().principal_specialization(3)
+                0
+
+            """
+            def get_variable(ring, name):
+                try:
+                    ring(name)
+                except TypeError:
+                    return ring[name].gen()
+                else:
+                    raise ValueError("the variable %s is in the base ring, pass it explicitly" % name)
+
+            if q is None:
+                q = get_variable(self.base_ring(), 'q')
+            if q == 1:
+                if n == infinity:
+                    raise ValueError("the stable principal specialization at q=1 is not defined")
+                f = lambda partition: (prod(n+partition.content(*c) for c in partition.cells())
+                                       / prod(h for h in partition.hooks()))
+            elif n == infinity:
+                f = lambda partition: (q**sum(i*part for i, part in enumerate(partition))
+                                       / prod(1-q**h for h in partition.hooks()))
+            else:
+                f = lambda partition: (q**sum(i*part for i, part in enumerate(partition))
+                                       * prod(1-q**(n + partition.content(*c)) for c in partition.cells())
+                                       / prod(1-q**h for h in partition.hooks()))
+
+            return self.parent()._apply_module_morphism(self, f, q.parent())
+
+
+        def exponential_specialization(self, t=None, q=1):
+            r"""
+            Return the exponential specialization of a symmetric function.
+
+            The exponential specialization `ex` is the ring homomorphism
+            defined on the basis of powersum symmetric functions by
+            setting `p_1 = t` and `p_n = 0` for `n > 1`.  Equivalently,
+            on the basis of homogeneous functions it is given by `ex(h_n)
+            = t^n / n!`, see Proposition 7.8.4 of [EnumComb2]_.
+
+            By analogy, the `q`-exponential specialization is a ring
+            homomorphism defined on the complete homogeneous symmetric
+            functions as
+
+            .. MATH::
+
+                ex_q(h_n) = t^n / [n]_q!,
+
+            where `[n]_q!` is the `q`-factorial.  Equivalently, for
+            `q \neq 1` and a homogeneous symmetric function `f` of
+            degree `n`,
+
+            .. MATH::
+
+                ex_q(f) = (1-q)^n t^n ps_q(f),
+
+            where `ps_q(f)` is the stable principal specialization of `f`.
+
+            INPUT:
+
+            - ``t`` (default: None) -- the value to use for `t`, the
+              default is to create a ring of polynomials in ``t``.
+
+            - ``q`` (default: 1) -- the value to use for `q`.  If ``q``
+              is ``None`` create a ring (or fraction field) of
+              polynomials in ``q``.
+
+            We use the formula in the proof of Corollary 7.21.6 of
+            [EnumComb2]_
+
+            .. MATH::
+
+                ex_{n,q}(s_\lambda) = t^n q^{\sum_i i\lambda_i}
+                                      / \prod_{u\in\lambda} (1 + \dots + q^{h(u)-1})
+
+            where `h(u)` is the hook length of a cell `u` in `\lambda`.
+
+            As a limit case, we obtain a formula for `q=1`
+
+            .. MATH::
+
+                ex_{n,1}(s_\lambda) = f^\lambda t^n / n!
+
+            where `f^\lambda` is the number of standard Young
+            tableaux of shape `\lambda`.
+
+            EXAMPLES::
+
+                sage: s = SymmetricFunctions(QQ).s()
+                sage: x = s[5,3]
+                sage: x.exponential_specialization()
+                1/1440*t^8
+
+                sage: x = 5*s[1,1,1] + 3*s[2,1] + 1
+                sage: x.exponential_specialization()
+                11/6*t^3 + 1
+
+            We also support the `q`-exponential_specialization::
+
+                sage: factor(s[3].exponential_specialization(q=var("q"), t=var("t")))
+                t^3/((q^2 + q + 1)*(q + 1))
+
+            TESTS::
+
+                sage: s.zero().exponential_specialization()
+                0
+
+            """
+            def get_variable(ring, name):
+                try:
+                    ring(name)
+                except TypeError:
+                    return ring[name].gen()
+                else:
+                    raise ValueError("the variable %s is in the base ring, pass it explicitly" % name)
+
+            if q == 1:
+                if t is None:
+                    t = get_variable(self.base_ring(), 't')
+
+                def f(partition):
+                    n = partition.size()
+                    return (StandardTableaux(partition).cardinality()
+                            * t**n / factorial(n))
+
+                return self.parent()._apply_module_morphism(self, f, t.parent())
+
+            if q is None and t is None:
+                q = get_variable(self.base_ring(), 'q')
+                t = get_variable(q.parent(), 't')
+            elif q is None:
+                q = get_variable(t.parent(), 'q')
+            elif t is None:
+                t = get_variable(q.parent(), 't')
+
+            f = lambda partition: (t**partition.size()
+                                   * q**sum(i*part for i, part in enumerate(partition))
+                                   / prod(sum(q**i for i in range(h)) for h in partition.hooks()))
+
+            return self.parent()._apply_module_morphism(self, f, t.parent())
+
 
 # Backward compatibility for unpickling
 from sage.misc.persist import register_unpickle_override

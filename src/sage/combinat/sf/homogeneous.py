@@ -28,6 +28,9 @@ from __future__ import absolute_import
 ####################################
 from . import multiplicative, classical
 from sage.combinat.partition import Partition
+from sage.rings.all import infinity
+from sage.misc.all import prod
+from sage.functions.other import factorial, binomial
 
 class SymmetricFunctionAlgebra_homogeneous(multiplicative.SymmetricFunctionAlgebra_multiplicative):
     def __init__(self, Sym):
@@ -222,6 +225,188 @@ class SymmetricFunctionAlgebra_homogeneous(multiplicative.SymmetricFunctionAlgeb
                 return self.counit()
             condition = lambda part: False
             return self._expand(condition, n, alphabet)
+
+        def principal_specialization(self, n=infinity, q=None):
+            r"""
+            Return the principal specialization of the symmetric function.
+
+            The principal specialization of order `n` is the ring
+            homomorphism given by setting `x_i = q^i` for `i \in
+            \{0,\dots,n-1\}` and `x_i = 0` for `i\geq n`, see Section
+            7.8 of [EnumComb2]_.
+
+            The stable principal specialization is the ring
+            homomorphism given by setting `x_i = q^i` for all `i`.
+            Note that setting `q = 1` in the stable principal
+            specialization is an invalid operation.
+
+            INPUT:
+
+            - ``n`` (default: ``infinity``) -- a nonnegative integer or
+              ``infinity``, specifying whether to compute the principal
+              specialization of order ``n`` or the stable principal
+              specialization.
+
+            - ``q`` (default: ``None``) -- the value to use for `q`,
+              the default is to create a ring (or fraction field) of
+              polynomials in ``q`` over the coefficient ring.
+
+            We use the formulas from Proposition 7.8.3 of [EnumComb2]_,
+
+            .. MATH::
+
+                ps_{n,q}(h_\lambda) = \prod_i \binom{n+\lambda_i-1}{\lambda_i}_q,
+
+                ps_{n,1}(h_\lambda) = \prod_i \binom{n+\lambda_i-1}{\lambda_i},
+
+                ps_q(h_\lambda) = 1 / \prod_i \prod_{j=1}^{\lambda_i} (1-q^j).
+
+            EXAMPLES::
+
+                sage: h = SymmetricFunctions(QQ).h()
+                sage: x = h[2,1]
+                sage: x.principal_specialization(3)
+                q^6 + 2*q^5 + 4*q^4 + 4*q^3 + 4*q^2 + 2*q + 1
+                sage: x = 3*h[2] + 2*h[1] + 1
+                sage: x.principal_specialization(3, q=var("q"))
+                2*(q^3 - 1)/(q - 1) + 3*(q^4 - 1)*(q^3 - 1)/((q^2 - 1)*(q - 1)) + 1
+
+            TESTS::
+
+                sage: x = h.zero()
+                sage: s = x.principal_specialization(3); s
+                0
+
+            """
+            from sage.combinat.q_analogues import q_binomial
+
+            def get_variable(ring, name):
+                try:
+                    ring(name)
+                except TypeError:
+                    return ring[name].gen()
+                else:
+                    raise ValueError("the variable %s is in the base ring, pass it explicitly" % name)
+
+            if q is None:
+                q = get_variable(self.base_ring(), 'q')
+
+            if q == 1:
+                if n == infinity:
+                    raise ValueError("the stable principal specialization at q=1 is not defined")
+                f = lambda partition: prod(binomial(n+part-1, part) for part in partition)
+            elif n == infinity:
+                f = lambda partition: prod(1/prod((1-q**i) for i in range(1, part+1)) for part in partition)
+            else:
+                f = lambda partition: prod(q_binomial(n+part-1, part, q=q) for part in partition)
+
+            return self.parent()._apply_module_morphism(self, f, q.parent())
+
+
+        def exponential_specialization(self, t=None, q=1):
+            r"""
+            Return the exponential specialization of a symmetric function.
+
+            The exponential specialization `ex` is the ring homomorphism
+            defined on the basis of powersum symmetric functions by
+            setting `p_1 = t` and `p_n = 0` for `n > 1`.  Equivalently,
+            on the basis of homogeneous functions it is given by `ex(h_n)
+            = t^n / n!`, see Proposition 7.8.4 of [EnumComb2]_.
+
+            By analogy, the `q`-exponential specialization is a ring
+            homomorphism defined on the complete homogeneous symmetric
+            functions as
+
+            .. MATH::
+
+                ex_q(h_n) = t^n / [n]_q!,
+
+            where `[n]_q!` is the `q`-factorial.  Equivalently, for
+            `q \neq 1` and a homogeneous symmetric function `f` of
+            degree `n`,
+
+            .. MATH::
+
+                ex_q(f) = (1-q)^n t^n ps_q(f),
+
+            where `ps_q(f)` is the stable principal specialization of `f`.
+
+            INPUT:
+
+            - ``t`` (default: None) -- the value to use for `t`, the
+              default is to create a ring of polynomials in ``t``.
+
+            - ``q`` (default: 1) -- the value to use for `q`.  If ``q``
+              is ``None`` create a ring (or fraction field) of
+              polynomials in ``q``.
+
+            EXAMPLES::
+
+                sage: h = SymmetricFunctions(QQ).h()
+                sage: x = h[5,3]
+                sage: x.exponential_specialization()
+                1/720*t^8
+                sage: factorial(5)*factorial(3)
+                720
+
+                sage: x = 5*h[1,1,1] + 3*h[2,1] + 1
+                sage: x.exponential_specialization()
+                13/2*t^3 + 1
+
+            We also support the `q`-exponential_specialization::
+
+                sage: factor(h[3].exponential_specialization(q=var("q"), t=var("t")))
+                t^3/((q^2 + q + 1)*(q + 1))
+
+            TESTS::
+
+                sage: x = h.zero()
+                sage: s = x.exponential_specialization(); s
+                0
+
+            """
+            from sage.combinat.q_analogues import q_factorial
+
+            def get_variable(ring, name):
+                try:
+                    ring(name)
+                except TypeError:
+                    return ring[name].gen()
+                else:
+                    raise ValueError("the variable %s is in the base ring, pass it explicitly" % name)
+
+            if q == 1:
+                if t is None:
+                    t = get_variable(self.base_ring(), 't')
+
+                def f(partition):
+                    n = 0
+                    m = 1
+                    for part in partition:
+                        n += part
+                        m *= factorial(part)
+                    return t**n/m
+
+                return self.parent()._apply_module_morphism(self, f, t.parent())
+
+            if q is None and t is None:
+                q = get_variable(self.base_ring(), 'q')
+                t = get_variable(q.parent(), 't')
+            elif q is None:
+                q = get_variable(t.parent(), 'q')
+            elif t is None:
+                t = get_variable(q.parent(), 't')
+
+            def f(partition):
+                n = 0
+                m = 1
+                for part in partition:
+                    n += part
+                    m *= q_factorial(part, q=q)
+                return t**n/m
+
+            return self.parent()._apply_module_morphism(self, f, t.parent())
+
 
 # Backward compatibility for unpickling
 from sage.misc.persist import register_unpickle_override
