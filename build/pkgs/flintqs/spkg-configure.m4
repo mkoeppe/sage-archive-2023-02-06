@@ -1,13 +1,17 @@
 SAGE_SPKG_CONFIGURE([flintqs], [
-  SAGE_SPKG_DEPCHECK([gmp], [
-    # FlintQS only builds against GMP, not MPIR. If we're using the
-    # system GMP, then we check for the QuadraticSieve program, which
-    # is the only interface to FlintQS that sagelib uses.
-    AC_CHECK_PROG(HAVE_QUADRATICSIEVE, QuadraticSieve, yes, no)
-    AS_IF([test "x$HAVE_QUADRATICSIEVE" = "xno"],
-          [sage_spkg_install_flintqs=yes])
-  ],
-  [ # If we're using sage's GMP, we have to use its FlintQS, too.
-    sage_spkg_install_flintqs=yes
-  ])
+  # The QuadraticSieve program is the only interface to FlintQS that
+  # sagelib uses. As a result, we don't need to call SAGE_SPKG_DEPCHECK
+  # here because there's no possibility for a library conflict.
+  AC_CHECK_PROG(HAVE_QUADRATICSIEVE, QuadraticSieve, yes, no)
+
+  # If we try to just do the obvious thing and swap the return value
+  # of AC_CHECK_PROG, then ./configure outputs
+  #
+  #   checking for QuadraticSieve... no
+  #
+  # when QuadraticSieve is found... which is not great.
+  #
+  AS_IF([test "x$HAVE_QUADRATICSIEVE" = "xyes"],
+        [sage_spkg_install_flintqs=no],
+        [sage_spkg_install_flintqs=yes])
 ])
