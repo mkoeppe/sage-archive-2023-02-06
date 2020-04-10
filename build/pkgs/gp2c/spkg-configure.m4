@@ -1,7 +1,9 @@
 SAGE_SPKG_CONFIGURE([gp2c], [
   # Default to installing the SPKG
   sage_spkg_install_gp2c=yes
-  libpari_pari_cfg=''
+
+  # And to using sage's pari.cfg (from the pari SPKG).
+  libpari_pari_cfg='$SAGE_LOCAL/lib/pari/pari.cfg'
 
   SAGE_SPKG_DEPCHECK([pari], [
     # We're using the system pari, so we can use the system gp2c
@@ -11,12 +13,10 @@ SAGE_SPKG_CONFIGURE([gp2c], [
       # We found gp2c on the system; use it.
       sage_spkg_install_gp2c=no
     fi
-  ],
-  [
-    # We're installing sage's pari, so we have to install its gp2c,
-    # too, if we're installing gp2c at all. In this case, we already
-    # know where to find pari.cfg.
-    libpari_pari_cfg='$SAGE_LOCAL/lib/pari/pari.cfg'
+
+    # Either way, if we're using the system pari, we no longer want
+    # to use sage's pari.cfg.
+    libpari_pari_cfg=''
   ])
 ],[],[],[
   # Post-check phase. Here we may need to locate pari.cfg if we're using
