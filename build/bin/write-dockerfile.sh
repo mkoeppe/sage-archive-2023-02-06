@@ -73,7 +73,7 @@ EOF
 ARG BASE_IMAGE=archlinux:latest
 FROM \${BASE_IMAGE} as with-system-packages
 EOF
-        UPDATE="pacman -Sy"
+        UPDATE="pacman -Sy &&"
         EXISTS="pacman -Si"
         INSTALL="pacman -Su --noconfirm"
         ;;
