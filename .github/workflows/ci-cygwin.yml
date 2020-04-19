@@ -47,6 +47,9 @@ jobs:
       run: |
         PACKAGES=$(sed 's/#.*//;' ./build/pkgs/*/distros/cygwin.txt)
         choco install $PACKAGES --source cygwin
+    - name: cygcheck
+      run: |
+        C:\\tools\\cygwin\\bin\\bash -l -c 'cygcheck -c'
     - name: configure
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -c 'export PATH=/usr/local/bin:/usr/bin && cd $(cygpath -u "$GITHUB_WORKSPACE") && ./configure $CONFIGURE_ARGS'
@@ -117,6 +120,9 @@ jobs:
       run: |
         PACKAGES=$(sed 's/#.*//;' ./build/pkgs/*/distros/cygwin.txt)
         choco install $PACKAGES --source cygwin
+    - name: cygcheck
+      run: |
+        C:\\tools\\cygwin\\bin\\bash -l -c 'cygcheck -c'
     - name: configure
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -c 'export PATH=/usr/local/bin:/usr/bin && cd $(cygpath -u "$GITHUB_WORKSPACE") && ./configure $CONFIGURE_ARGS'
@@ -190,6 +196,9 @@ jobs:
       run: |
         PACKAGES=$(sed 's/#.*//;' ./build/pkgs/*/distros/cygwin.txt)
         choco install $PACKAGES --source cygwin
+    - name: cygcheck
+      run: |
+        C:\\tools\\cygwin\\bin\\bash -l -c 'cygcheck -c'
     - uses: actions/download-artifact@v2-preview
       with:
         name: ${{ env.LOCAL_ARTIFACT_NAME }}
@@ -272,6 +281,9 @@ jobs:
       run: |
         PACKAGES=$(sed 's/#.*//;' ./build/pkgs/*/distros/cygwin.txt)
         choco install $PACKAGES --source cygwin
+    - name: cygcheck
+      run: |
+        C:\\tools\\cygwin\\bin\\bash -l -c 'cygcheck -c'
     - uses: actions/download-artifact@v2-preview
       with:
         name: ${{ env.LOCAL_ARTIFACT_NAME }}
@@ -352,6 +364,9 @@ jobs:
       run: |
         PACKAGES=$(sed 's/#.*//;' ./build/pkgs/*/distros/cygwin.txt)
         choco install $PACKAGES --source cygwin
+    - name: cygcheck
+      run: |
+        C:\\tools\\cygwin\\bin\\bash -l -c 'cygcheck -c'
     - uses: actions/download-artifact@v2-preview
       with:
         name: ${{ env.LOCAL_ARTIFACT_NAME }}
@@ -432,6 +447,9 @@ jobs:
       run: |
         PACKAGES=$(sed 's/#.*//;' ./build/pkgs/*/distros/cygwin.txt)
         choco install $PACKAGES --source cygwin
+    - name: cygcheck
+      run: |
+        C:\\tools\\cygwin\\bin\\bash -l -c 'cygcheck -c'
     - uses: actions/download-artifact@v2-preview
       with:
         name: ${{ env.LOCAL_ARTIFACT_NAME }}
@@ -513,6 +531,9 @@ jobs:
       run: |
         PACKAGES=$(sed 's/#.*//;' ./build/pkgs/*/distros/cygwin.txt)
         choco install $PACKAGES --source cygwin
+    - name: cygcheck
+      run: |
+        C:\\tools\\cygwin\\bin\\bash -l -c 'cygcheck -c'
     - uses: actions/download-artifact@v2-preview
       with:
         name: ${{ env.LOCAL_ARTIFACT_NAME }}
@@ -593,6 +614,9 @@ jobs:
       run: |
         PACKAGES=$(sed 's/#.*//;' ./build/pkgs/*/distros/cygwin.txt)
         choco install $PACKAGES --source cygwin
+    - name: cygcheck
+      run: |
+        C:\\tools\\cygwin\\bin\\bash -l -c 'cygcheck -c'
     - uses: actions/download-artifact@v2-preview
       with:
         name: ${{ env.LOCAL_ARTIFACT_NAME }}
