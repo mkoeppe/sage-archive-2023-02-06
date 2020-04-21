@@ -85,6 +85,9 @@ SAGE_SPKG_CONFIGURE([openblas], [
                          ], [AS_VAR_SET([HAVE_OPENBLAS], [yes])], [AS_VAR_SET([HAVE_OPENBLAS], [no])])
                          AC_LANG_POP([C])
                          AC_MSG_RESULT([$HAVE_OPENBLAS])
+                         dnl #29538 - workaround failing build of matplotlib etc.
+                         AS_VAR_SET([HAVE_OPENBLAS], [no])
+                         AC_MSG_NOTICE([System OpenBLAS use is disabled for this release, however])
                        ])
                       ])
       AC_SEARCH_LIBS([cblas_dgemm], [openblas cblas blas], [
