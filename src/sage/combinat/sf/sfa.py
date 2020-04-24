@@ -213,7 +213,7 @@ from __future__ import absolute_import
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
 from sage.misc.cachefunc import cached_method
-from sage.rings.all import Integer, PolynomialRing, QQ, ZZ
+from sage.rings.all import Integer, PolynomialRing, QQ, ZZ, infinity
 from sage.rings.polynomial.polynomial_element import is_Polynomial
 from sage.rings.polynomial.multi_polynomial import is_MPolynomial
 from sage.combinat.partition import _Partitions, Partitions, Partitions_n, Partition
@@ -5438,6 +5438,211 @@ class SymmetricFunctionAlgebra_generic_Element(CombinatorialFreeModule.Element):
         p = self.parent().symmetric_function_ring().p()
         return self.parent()(p.sum(self.eval_at_permutation_roots(rho) \
             *p(rho)/rho.centralizer_size() for rho in Partitions(n)))
+
+    def principal_specialization(self, n=infinity, q=None):
+        r"""
+        Return the principal specialization of a symmetric function.
+
+        The *principal specialization* of order `n` is the ring
+        homomorphism from the ring of symmetric functions to another
+        commutative ring `R` given by `x_i \mapsto q^{i-1}` for
+        `i \in \{1,\dots,n\}` and `x_i \mapsto 0` for `i > n`.
+        Here, `q` is a given element of `R`.
+        (To be more precise, it is a `K`-algebra homomorphism,
+        where `K` is the base ring.)
+        See Section 7.8 of [EnumComb2]_.
+
+        The *stable principal specialization* is the ring
+        homomorphism given by `x_i \mapsto q^{i-1}` for all `i`.
+        This is well-defined only if the resulting infinite sums
+        converge; thus, in particular, setting `q = 1` in the
+        stable principal specialization is an invalid operation.
+
+        INPUT:
+
+        - ``n`` (default: ``infinity``) -- a nonnegative integer or
+          ``infinity``, specifying whether to compute the principal
+          specialization of order ``n`` or the stable principal
+          specialization.
+
+        - ``q`` (default: ``None``) -- the value to use for `q`; the
+          default is to create a ring of polynomials in ``q``
+          (or a field of rational functions in ``q``) over the
+          given coefficient ring.
+
+        EXAMPLES::
+
+            sage: m = SymmetricFunctions(QQ).m()
+            sage: x = m[1,1]
+            sage: x.principal_specialization(3)
+            q^3 + q^2 + q
+
+        By default we return a rational function in ``q``.  Sometimes
+        it is better to obtain an element of the symbolic ring::
+
+            sage: h = SymmetricFunctions(QQ).h()
+            sage: (h[3]+h[2]).principal_specialization(q=var("q"))
+            1/((q^2 - 1)*(q - 1)) - 1/((q^3 - 1)*(q^2 - 1)*(q - 1))
+
+        In case ``q`` is in the base ring, it must be passed explicitly::
+
+            sage: R = QQ['q,t']
+            sage: Ht = SymmetricFunctions(R).macdonald().Ht()
+            sage: Ht[2].principal_specialization()
+            Traceback (most recent call last):
+            ...
+            ValueError: the variable q is in the base ring, pass it explicitly
+
+            sage: Ht[2].principal_specialization(q=R("q"))
+            (q^2 + 1)/(q^3 - q^2 - q + 1)
+
+        Note that the principal specialization can be obtained as a plethysm::
+
+            sage: R = QQ['q'].fraction_field()
+            sage: s = SymmetricFunctions(R).s()
+            sage: one = s.one()
+            sage: q = R("q")
+            sage: f = s[3,2,2]
+            sage: f.principal_specialization(q=q) == f(one/(1-q)).coefficient([])
+            True
+            sage: f.principal_specialization(n=4, q=q) == f(one*(1-q^4)/(1-q)).coefficient([])
+            True
+
+        TESTS::
+
+            sage: m = SymmetricFunctions(QQ).m()
+            sage: m.zero().principal_specialization(3)
+            0
+
+            sage: x = 5*m[1,1,1] + 3*m[2,1] + 1
+            sage: x.principal_specialization(3)
+            3*q^5 + 6*q^4 + 5*q^3 + 6*q^2 + 3*q + 1
+
+        Check that the principal specializations in different bases
+        are all the same.  When specific implementations for further
+        bases are added, this test should be adapted::
+
+            sage: S = SymmetricFunctions(QQ)
+            sage: B = [S.p(), S.m(), S.e(), S.h(), S.s(), S.f()]
+            sage: m = S.m(); x = m[2,1]
+            sage: len(set([b(x).principal_specialization(n=3) for b in B]))
+            1
+            sage: len(set([b(x).principal_specialization() for b in B]))
+            1
+            sage: len(set([b(x).principal_specialization(n=4, q=1) for b in B]))
+            1
+            sage: len(set([b(x).principal_specialization(n=4, q=2) for b in B]))
+            1
+
+        Check that the stable principal specialization at `q = 1`
+        raises a ``ValueError``:
+
+            sage: def test_error(x):
+            ....:     message = "the stable principal specialization of %s at q=1 should raise a ValueError"
+            ....:     try:
+            ....:         x.principal_specialization(q=1)
+            ....:     except ValueError as e:
+            ....:         return(e)
+            ....:     except StandardError as e:
+            ....:         raise ValueError((message + ", but raised '%s' instead") % (x, e))
+            ....:     raise ValueError((message + ", but didn't") % x)
+
+            sage: set([str(test_error(b(x))) for b in B])
+            {'the stable principal specialization at q=1 is not defined'}
+
+        Check that specifying `q` which is a removable singularity works::
+
+            sage: S = SymmetricFunctions(QQ)
+            sage: B = [S.p(), S.m(), S.e(), S.h(), S.s(), S.f()]
+            sage: m = S.m(); x = m[2,2,1]
+            sage: set([b(x).principal_specialization(n=4, q=QQbar.zeta(3)) for b in B])
+            {-3}
+
+        """
+        # heuristically, it seems fastest to fall back to the
+        # elementary basis instead of the powersum basis
+        e = self.parent().realization_of().elementary()
+        return e(self).principal_specialization(n, q=q)
+
+    def exponential_specialization(self, t=None, q=1):
+        r"""
+        Return the exponential specialization of a symmetric function.
+
+        The exponential specialization `ex` is the ring homomorphism
+        defined on the basis of powersum symmetric functions by
+        setting `p_1 = t` and `p_n = 0` for `n > 1`.  Equivalently,
+        on the basis of homogeneous functions it is given by `ex(h_n)
+        = t^n / n!`, see Proposition 7.8.4 of [EnumComb2]_.
+
+        By analogy, the `q`-exponential specialization is a ring
+        homomorphism defined on the complete homogeneous symmetric
+        functions by
+
+        .. MATH::
+
+            ex_q(h_n) = t^n / [n]_q!,
+
+        where `[n]_q!` is the `q`-factorial.  Equivalently, for
+        `q \neq 1` and a homogeneous symmetric function `f` of
+        degree `n`,
+
+        .. MATH::
+
+            ex_q(f) = (1-q)^n t^n ps(f),
+
+        where `ps(f)` is the stable principal specialization of `f`.
+
+        INPUT:
+
+        - ``t`` (default: None) -- the value to use for `t`, the
+          default is to create a ring of polynomials in ``t``.
+
+        - ``q`` (default: 1) -- the value to use for `q`.  If ``q``
+          is ``None`` create a ring (or fraction field) of
+          polynomials in ``q``.
+
+        EXAMPLES::
+
+            sage: m = SymmetricFunctions(QQ).m()
+            sage: (m[2,1]+m[1,1]).exponential_specialization()
+            1/2*t^2
+
+            sage: x = m[3]+m[2,1]+m[1,1,1]
+            sage: d = x.homogeneous_degree()
+            sage: var("q t")
+            (q, t)
+            sage: factor((x.principal_specialization()*(1-q)^d*t^d))
+            t^3/((q^2 + q + 1)*(q + 1))
+            sage: factor(x.exponential_specialization(q=q, t=t))
+            t^3/((q^2 + q + 1)*(q + 1))
+
+        TESTS::
+
+            sage: m = SymmetricFunctions(QQ).m()
+            sage: m.zero().exponential_specialization()
+            0
+
+        Check that the exponential specializations in different bases
+        are all the same.  When specific implementations for further
+        bases are added, this test should be adapted::
+
+            sage: S = SymmetricFunctions(QQ)
+            sage: B = [S.p(), S.m(), S.e(), S.h(), S.s(), S.f()]
+            sage: m = S.m(); x = m[3]+m[2,1]+m[1,1,1]
+            sage: len(set([b(x).exponential_specialization(q=None, t=None) for b in B]))
+            1
+            sage: len(set([b(x).exponential_specialization(q=1) for b in B]))
+            1
+            sage: len(set([b(x).exponential_specialization(q=2) for b in B]))
+            1
+            sage: len(set([b(x).exponential_specialization(t=2) for b in B]))
+            1
+
+        """
+        # heuristically, it seems fastest to fall back to the
+        # elementary basis instead of the powersum basis
+        e = self.parent().realization_of().elementary()
+        return e(self).exponential_specialization(t=t, q=q)
 
 SymmetricFunctionAlgebra_generic.Element = SymmetricFunctionAlgebra_generic_Element
 
