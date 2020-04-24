@@ -474,7 +474,7 @@ class SymmetricFunctionAlgebra_monomial(classical.SymmetricFunctionAlgebra_class
 
                 return self.parent()._apply_module_morphism(self, f, t.parent())
 
-            return self.parent().realization_of().powersum()(self).exponential_specialization(t=t, q=q)
+            return self.parent().realization_of().homogeneous()(self).exponential_specialization(t=t, q=q)
 
 # Backward compatibility for unpickling
 from sage.misc.persist import register_unpickle_override
