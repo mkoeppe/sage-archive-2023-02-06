@@ -11,23 +11,38 @@ diff --git a/Makefile.PL b/Makefile.PL
 index 208aae0..c75dce3 100644
 --- a/Makefile.PL
 +++ b/Makefile.PL
-@@ -124,14 +124,14 @@ WriteMakefile
+@@ -124,14 +124,14 @@
       VERSION_FROM => 'Gnu.pm',
       MIN_PERL_VERSION => '5.8.1',
-      LIBS	  => [ "$RLLIB $libs" ],
--     LDDLFLAGS	  => "$RLLIB $Config{lddlflags}",
-+     LDDLFLAGS	  => "$RLLIB $Config{lddlflags} $ENV{LDFLAGS}",
+      LIBS        => [ "$RLLIB $libs" ],
+-     LDDLFLAGS   => "$RLLIB $Config{lddlflags}",
++     LDDLFLAGS   => "$RLLIB $Config{lddlflags} $ENV{LDFLAGS}",
       dynamic_lib  => { OTHERLDFLAGS => $lddflags },
-      DEFINE	  => $defs,
+      DEFINE      => $defs,
       ($Config{osname} eq 'os2' ?
        (
-        IMPORTS	  => { xfree => 'emxlibcm.401' }, # Yuck!
+        IMPORTS   => { xfree => 'emxlibcm.401' }, # Yuck!
        ) : () ),
--     INC	  => $RLINC,
-+     INC	  => "$RLINC $ENV{CFLAGS}",
-      dist	  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz' },
-      clean	  => { FILES => "rlver.c rlver$Config{_exe} rlmalloc.c rlmalloc$Config{_exe}" },
+-     INC         => $RLINC,
++     INC         => "$RLINC $ENV{CFLAGS}",
+      dist        => { COMPRESS => 'gzip -9f', SUFFIX => 'gz' },
+      clean       => { FILES => "rlver.c rlver$Config{_exe} rlmalloc.c rlmalloc$Config{_exe}" },
  );
--- 
-2.24.1.1484.g7fcb965970
-
+@@ -200,7 +200,7 @@
+     close(F);
+ 
+     # compile it
+-    my $comp_cmd = "$Config{cc} $RLINC $Config{ccflags} $defs $frlver -o rlver $RLLIB $lddflags $Config{ldflags} $libs";
++    my $comp_cmd = "$Config{cc} $RLINC $Config{ccflags} $ENV{CFLAGS} $defs $frlver -o rlver $RLLIB $lddflags $Config{ldflags} $Config{LDFLAGS} $libs";
+     print $comp_cmd, "\n";
+     system($comp_cmd);
+     if ($?) {
+@@ -302,7 +302,7 @@
+     for my $symbol_set (@symbol_sets) {
+        my $xdef = join " ", map "-D$_=$symbol_set->{$_}", sort keys %$symbol_set;
+        # compile it
+-       my $comp_cmd = "$Config{cc} $RLINC $Config{ccflags} $defs $xdef $frlmalloc -o rlmalloc $RLLIB $lddflags $Config{ldflags} $libs";
++       my $comp_cmd = "$Config{cc} $RLINC $Config{ccflags} $ENV{CFLAGS} $defs $xdef $frlmalloc -o rlmalloc $RLLIB $lddflags $Config{ldflags} $ENV{LDFLAGS} $libs";
+        print $comp_cmd, "\n";
+        unless (system($comp_cmd) || `./rlmalloc` !~ /^ok$/ || $?) {
+            $extra_defs = $xdef;
