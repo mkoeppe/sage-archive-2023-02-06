@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 # to be run from $SAGE_ROOT, with arguments sage-local-${{ env.PREVIOUS_STAGES }}.tar
 
-# Show all tar files from the sage-local artifact
-ls -l sage-local-*.tar
-
-mkdir -p
+# Show all tar files
+ls -l $*
 
 # We specifically use the cygwin tar so that symlinks are saved/restored correctly on Windows.
 for a in $*; do
@@ -22,6 +20,7 @@ rm -f sage-local-*.tar
 
 # Show what has been built already.
 ls -l local local/var/lib/sage/installed/
+df -h
 
 # Rebase!
 src/bin/sage-rebase.sh local
