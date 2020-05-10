@@ -142,18 +142,5 @@ index 0000000..1960a11
 +-- 
 +2.25.0
 +
-diff --git a/9.2.0/gentoo/README.history b/9.2.0/gentoo/README.history
-index 0ac54f3..01df09a 100644
---- a/9.2.0/gentoo/README.history
-+++ b/9.2.0/gentoo/README.history
-@@ -1,5 +1,7 @@
- 5		TODO
- 	+ 34_all_ia64-neg-insn-cost.patch
-+	+ 35_all_glibc-2.31-libsanitizer-1.patch
-+	+ 36_all_glibc-2.31-libsanitizer-2.patch
- 
- 4		22 Dec 2012
- 	+ 31_all_openmp-for-SEGV.patch
--- 
 cgit v1.2.1
 
