@@ -21,7 +21,7 @@ if not six.PY2:
     import importlib.util
 
 
-def find_python_sources(src_dir, modules=['sage']):
+def find_python_sources(src_dir, modules=['sage'], sage_packages=None):
     """
     Find all Python packages and Python modules in the sources.
 
@@ -31,6 +31,12 @@ def find_python_sources(src_dir, modules=['sage']):
 
     - ``modules`` -- (default: ``['sage']``) sequence of strings:
       the top-level directories in ``src_dir`` to be considered
+
+    - ``sage_packages`` -- (default: ``None``) if not ``None``,
+      should be a sequence or set of strings: only find modules whose
+      ``sage_package`` (from a ``# distutils: sage_package = PACKAGE``
+      directive in the module source file) is an element of
+      ``sage_packages``.
 
     OUTPUT: Pair consisting of
 
@@ -97,6 +103,9 @@ def find_python_sources(src_dir, modules=['sage']):
         sage: find_python_sources(SAGE_SRC, modules=['sage_setup'])
         (['sage_setup', ...], [...'sage_setup.find'...])
     """
+    from Cython.Build.Dependencies import DistutilsInfo
+    from Cython.Utils import open_source_file
+
     PYMOD_EXT = get_extensions('source')[0]
     INIT_FILE = '__init__' + PYMOD_EXT
 
@@ -111,7 +120,8 @@ def find_python_sources(src_dir, modules=['sage']):
                 package = dirpath.replace(os.path.sep, '.')
                 if INIT_FILE in filenames:
                     # Ordinary package.
-                    python_packages.append(package)
+                    if sage_packages is None or '' in sage_packages:
+                        python_packages.append(package)
                 if os.path.exists(os.path.join(dirpath, 'nonamespace')):
                     # Marked as "not a namespace package"
                     # (similar to nodoctest in sage.doctest.control)
@@ -120,6 +130,14 @@ def find_python_sources(src_dir, modules=['sage']):
                 for filename in filenames:
                     base, ext = os.path.splitext(filename)
                     if ext == PYMOD_EXT and base != '__init__':
+                        if sage_packages is not None:
+                            with open_source_file(os.path.join(dirpath, filename),
+                                                  error_handling='ignore') as fh:
+                                source = fh.read()
+                            distutils_info = DistutilsInfo(source)
+                            sage_package = distutils_info.values.get('sage_package', '')
+                            if sage_package not in sage_packages:
+                                continue
                         python_modules.append(package + '.' + base)
     finally:
         os.chdir(cwd)
