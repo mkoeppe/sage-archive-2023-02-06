@@ -37,7 +37,8 @@ def find_python_sources(src_dir, modules=['sage']):
     - the list of package names (corresponding to directories with
       ``__init__.py``),
 
-    - module names (corresponding to other ``*.py`` files).
+    - module names (corresponding to other ``*.py`` files except for
+      those below directories with a file named ``nonamespace`` in it).
 
     Both use dot as separator.
 
@@ -46,12 +47,48 @@ def find_python_sources(src_dir, modules=['sage']):
         sage: from sage.env import SAGE_SRC
         sage: from sage_setup.find import find_python_sources
         sage: py_packages, py_modules = find_python_sources(SAGE_SRC)
-        sage: examples = ['sage.structure', 'sage.structure.formal_sum',
-        ....:             'sage.structure.sage_object', 'sage.doctest.tests']
-        sage: [m in py_packages for m in examples]
-        [True, False, False, False]
-        sage: [m in py_modules for m in examples]
-        [False, True, False, False]
+
+    Ordinary package (with ``__init__.py``)::
+
+        sage: ['sage.structure' in L for L in (py_packages, py_modules)]
+        [True, False]
+
+    Python module in an ordinary package::
+
+        sage: ['sage.structure.formal_sum' in L for L in (py_packages, py_modules)]
+        [False, True]
+
+    Cython module in an ordinary package::
+
+        sage: ['sage.structure.sage_object' in L for L in (py_packages, py_modules)]
+        [False, False]
+
+    Subdirectory without any Python files::
+
+        sage: ['sage.doctest.tests' in L for L in (py_packages, py_modules)]
+        [False, False]
+
+    Native namespace package (no ``__init__.py``, PEP 420)::
+
+        sage: ['sage.graphs.graph_decompositions' in L for L in (py_packages, py_modules)]
+        [False, False]
+
+    Python module in a native namespace package::
+
+        sage: ['sage.graphs.graph_decompositions.modular_decomposition' in L for L in (py_packages, py_modules)]
+        [False, True]
+
+    Subdirectory marked with a ``nonamespace`` file::
+
+        sage: ['sage.extdata' in L for L in (py_packages, py_modules)]
+        [False, False]
+
+    Python file (not module) below a directory with a ``nonamespace`` file::
+
+        sage: ['sage.ext_data.nbconvert.postprocess' in L for L in (py_packages, py_modules)]
+        [False, False]
+
+    Benchmarking::
 
         sage: timeit('find_python_sources(SAGE_SRC)',         # random output
         ....:        number=1, repeat=1)
@@ -71,14 +108,19 @@ def find_python_sources(src_dir, modules=['sage']):
         os.chdir(src_dir)
         for module in modules:
             for dirpath, dirnames, filenames in os.walk(module):
-                if INIT_FILE not in filenames:
+                package = dirpath.replace(os.path.sep, '.')
+                if INIT_FILE in filenames:
+                    # Ordinary package.
+                    python_packages.append(package)
+                if os.path.exists(os.path.join(dirpath, 'nonamespace')):
+                    # Marked as "not a namespace package"
+                    # (similar to nodoctest in sage.doctest.control)
+                    dirnames.clear()
                     continue
-                dirpath = dirpath.replace(os.path.sep, '.')
-                python_packages.append(dirpath)
                 for filename in filenames:
                     base, ext = os.path.splitext(filename)
                     if ext == PYMOD_EXT and base != '__init__':
-                        python_modules.append(dirpath + '.' + base)
+                        python_modules.append(package + '.' + base)
     finally:
         os.chdir(cwd)
     return python_packages, python_modules
