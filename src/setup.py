@@ -778,7 +778,7 @@ class sage_build(build):
 print("Discovering Python/Cython source code....")
 t = time.time()
 from sage_setup.find import find_python_sources
-python_packages, python_modules = find_python_sources(
+python_packages, python_modules, cython_modules = find_python_sources(
     SAGE_SRC, ['sage', 'sage_setup'])
 
 log.debug('python_packages = {0}'.format(python_packages))
@@ -904,4 +904,4 @@ code = setup(name = 'sage',
                       build_cython=sage_build_cython,
                       build_ext=sage_build_ext,
                       install=sage_install),
-      ext_modules = ext_modules)
+      ext_modules = ext_modules + cython_modules)

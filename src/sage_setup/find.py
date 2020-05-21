@@ -23,7 +23,7 @@ if not six.PY2:
 
 def find_python_sources(src_dir, modules=['sage'], sage_packages=None):
     """
-    Find all Python packages and Python modules in the sources.
+    Find all Python packages and Python/Cython modules in the sources.
 
     INPUT:
 
@@ -38,13 +38,15 @@ def find_python_sources(src_dir, modules=['sage'], sage_packages=None):
       directive in the module source file) is an element of
       ``sage_packages``.
 
-    OUTPUT: Pair consisting of
+    OUTPUT: Triple consisting of
 
     - the list of package names (corresponding to directories with
       ``__init__.py``),
 
-    - module names (corresponding to other ``*.py`` files except for
+    - Python module names (corresponding to other ``*.py`` files except for
       those below directories with a file named ``nonamespace`` in it).
+
+    - Cython extensions (corresponding to ``*.pyx`` files).
 
     Both use dot as separator.
 
@@ -52,7 +54,7 @@ def find_python_sources(src_dir, modules=['sage'], sage_packages=None):
 
         sage: from sage.env import SAGE_SRC
         sage: from sage_setup.find import find_python_sources
-        sage: py_packages, py_modules = find_python_sources(SAGE_SRC)
+        sage: py_packages, py_modules, cy_modules = find_python_sources(SAGE_SRC)
 
     Ordinary package (with ``__init__.py``)::
 
@@ -101,16 +103,18 @@ def find_python_sources(src_dir, modules=['sage'], sage_packages=None):
         1 loops, best of 1: 18.8 ms per loop
 
         sage: find_python_sources(SAGE_SRC, modules=['sage_setup'])
-        (['sage_setup', ...], [...'sage_setup.find'...])
+        (['sage_setup', ...], [...'sage_setup.find'...], [])
     """
     from Cython.Build.Dependencies import DistutilsInfo
     from Cython.Utils import open_source_file
+    from distutils.extension import Extension
 
     PYMOD_EXT = get_extensions('source')[0]
     INIT_FILE = '__init__' + PYMOD_EXT
 
     python_packages = []
     python_modules = []
+    cython_modules = []
 
     cwd = os.getcwd()
     try:
@@ -127,21 +131,30 @@ def find_python_sources(src_dir, modules=['sage'], sage_packages=None):
                     # (similar to nodoctest in sage.doctest.control)
                     dirnames.clear()
                     continue
+
+                def is_in_sage_packages(filename):
+                    if sage_packages is None:
+                        return True
+                    with open_source_file(os.path.join(dirpath, filename),
+                                          error_handling='ignore') as fh:
+                        source = fh.read()
+                    distutils_info = DistutilsInfo(source)
+                    sage_package = distutils_info.values.get('sage_package', '')
+                    return sage_package in sage_packages
+
                 for filename in filenames:
                     base, ext = os.path.splitext(filename)
                     if ext == PYMOD_EXT and base != '__init__':
-                        if sage_packages is not None:
-                            with open_source_file(os.path.join(dirpath, filename),
-                                                  error_handling='ignore') as fh:
-                                source = fh.read()
-                            distutils_info = DistutilsInfo(source)
-                            sage_package = distutils_info.values.get('sage_package', '')
-                            if sage_package not in sage_packages:
-                                continue
-                        python_modules.append(package + '.' + base)
+                        if is_in_sage_packages(filename):
+                            python_modules.append(package + '.' + base)
+                    if ext == '.pyx':
+                        if is_in_sage_packages(filename):
+                            cython_modules.append(Extension(package + '.' + base,
+                                                            sources=[os.path.join(dirpath, filename)]))
+
     finally:
         os.chdir(cwd)
-    return python_packages, python_modules
+    return python_packages, python_modules, cython_modules
 
 
 def find_extra_files(src_dir, modules, cythonized_dir, special_filenames=[]):
