@@ -19,8 +19,46 @@ import os
 
 from collections import defaultdict
 
+def read_distribution(src_file):
+    """
+    Parse ``src_file`` for a ``# sage_setup: distribution = PKG`` directive.
 
-def find_python_sources(src_dir, modules=['sage'], sage_packages=None):
+    INPUT:
+
+    - ``src_file`` -- file name of a Python or Cython source file
+
+    OUTPUT:
+
+    - a string, the name of the distribution package (``PKG``); or the empty
+      string if no directive was found.
+
+    EXAMPLES::
+
+        sage: from sage.env import SAGE_SRC
+        sage: from sage_setup.find import read_distribution
+        sage: read_distribution(os.path.join(SAGE_SRC, 'sage', 'graphs', 'graph_decompositions', 'tdlib.pyx'))
+        'sage-tdlib'
+        sage: read_distribution(os.path.join(SAGE_SRC, 'sage', 'graphs', 'graph_decompositions', 'modular_decomposition.py'))
+        ''
+    """
+    from Cython.Utils import open_source_file
+    with open_source_file(src_file, error_handling='ignore') as fh:
+        for line in fh:
+            # Adapted from Cython's Build/Dependencies.py
+            line = line.lstrip()
+            if not line:
+                continue
+            if line[0] != '#':
+                break
+            line = line[1:].lstrip()
+            kind = "sage_setup:"
+            if line.startswith(kind):
+                key, _, value = [s.strip() for s in line[len(kind):].partition('=')]
+                if key == "distribution":
+                    return value
+    return ''
+
+def find_python_sources(src_dir, modules=['sage'], distributions=None):
     """
     Find all Python packages and Python/Cython modules in the sources.
 
@@ -31,11 +69,11 @@ def find_python_sources(src_dir, modules=['sage'], sage_packages=None):
     - ``modules`` -- (default: ``['sage']``) sequence of strings:
       the top-level directories in ``src_dir`` to be considered
 
-    - ``sage_packages`` -- (default: ``None``) if not ``None``,
+    - ``distributions`` -- (default: ``None``) if not ``None``,
       should be a sequence or set of strings: only find modules whose
-      ``sage_package`` (from a ``# distutils: sage_package = PACKAGE``
+      ``distribution`` (from a ``# sage_setup: distribution = PACKAGE``
       directive in the module source file) is an element of
-      ``sage_packages``.
+      ``distributions``.
 
     OUTPUT: Triple consisting of
 
@@ -104,8 +142,6 @@ def find_python_sources(src_dir, modules=['sage'], sage_packages=None):
         sage: find_python_sources(SAGE_SRC, modules=['sage_setup'])
         (['sage_setup', ...], [...'sage_setup.find'...], [])
     """
-    from Cython.Build.Dependencies import DistutilsInfo
-    from Cython.Utils import open_source_file
     from distutils.extension import Extension
 
     PYMOD_EXT = get_extensions('source')[0]
@@ -123,7 +159,7 @@ def find_python_sources(src_dir, modules=['sage'], sage_packages=None):
                 package = dirpath.replace(os.path.sep, '.')
                 if INIT_FILE in filenames:
                     # Ordinary package.
-                    if sage_packages is None or '' in sage_packages:
+                    if distributions is None or '' in distributions:
                         python_packages.append(package)
                 if os.path.exists(os.path.join(dirpath, 'nonamespace')):
                     # Marked as "not a namespace package"
@@ -131,23 +167,19 @@ def find_python_sources(src_dir, modules=['sage'], sage_packages=None):
                     dirnames.clear()
                     continue
 
-                def is_in_sage_packages(filename):
-                    if sage_packages is None:
+                def is_in_distributions(filename):
+                    if distributions is None:
                         return True
-                    with open_source_file(os.path.join(dirpath, filename),
-                                          error_handling='ignore') as fh:
-                        source = fh.read()
-                    distutils_info = DistutilsInfo(source)
-                    sage_package = distutils_info.values.get('sage_package', '')
-                    return sage_package in sage_packages
+                    distribution = read_distribution(os.path.join(dirpath, filename))
+                    return distribution in distributions
 
                 for filename in filenames:
                     base, ext = os.path.splitext(filename)
                     if ext == PYMOD_EXT and base != '__init__':
-                        if is_in_sage_packages(filename):
+                        if is_in_distributions(filename):
                             python_modules.append(package + '.' + base)
                     if ext == '.pyx':
-                        if is_in_sage_packages(filename):
+                        if is_in_distributions(filename):
                             cython_modules.append(Extension(package + '.' + base,
                                                             sources=[os.path.join(dirpath, filename)]))
 
