@@ -133,6 +133,11 @@ def find_python_sources(src_dir, modules=['sage'], distributions=None):
         sage: ['sage.ext_data.nbconvert.postprocess' in L for L in (py_packages, py_modules)]
         [False, False]
 
+    Filtering by distribution (distutils package)::
+
+        sage: find_python_sources(SAGE_SRC, distributions=['sage-tdlib'])
+        ([], [], [<distutils.extension.Extension('sage.graphs.graph_decompositions.tdlib')...>])
+
     Benchmarking::
 
         sage: timeit('find_python_sources(SAGE_SRC)',         # random output
