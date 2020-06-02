@@ -349,15 +349,6 @@ ext_modules = [
     Extension('sage.graphs.independent_sets',
               sources = ['sage/graphs/independent_sets.pyx']),
 
-    Extension('sage.graphs.graph_decompositions.fast_digraph',
-              sources = ['sage/graphs/graph_decompositions/fast_digraph.pyx']),
-
-    Extension('sage.graphs.graph_decompositions.vertex_separation',
-              sources = ['sage/graphs/graph_decompositions/vertex_separation.pyx']),
-
-    Extension('sage.graphs.graph_decompositions.graph_products',
-              sources = ['sage/graphs/graph_decompositions/graph_products.pyx']),
-
     Extension('sage.graphs.convexity_properties',
               sources = ['sage/graphs/convexity_properties.pyx']),
 
