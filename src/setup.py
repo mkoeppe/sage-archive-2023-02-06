@@ -62,7 +62,7 @@ from sage_setup.command.sage_build_ext import sage_build_ext
 # TODO: This should be quiet by default
 print("Discovering Python/Cython source code....")
 t = time.time()
-from sage_setup.find import find_python_sources
+from sage_setup.find import find_python_sources, is_package_or_namespace_package_dir
 python_packages, python_modules, cython_modules = find_python_sources(
     SAGE_SRC, ['sage', 'sage_setup'])
 
@@ -70,6 +70,8 @@ log.debug('python_packages = {0}'.format(python_packages))
 
 print("Discovered Python/Cython sources, time: %.2f seconds." % (time.time() - t))
 
+import Cython.Build.Dependencies
+Cython.Build.Dependencies.is_package_dir = is_package_or_namespace_package_dir
 
 from sage_setup.command.sage_install import sage_install
 

@@ -192,6 +192,32 @@ def find_python_sources(src_dir, modules=['sage'], distributions=None):
         os.chdir(cwd)
     return python_packages, python_modules, cython_modules
 
+def is_package_or_namespace_package_dir(dirpath):
+    """
+    True when ``dirpath`` is a regular or namespace package.
+
+    EXAMPLES::
+
+        sage: from sage.env import SAGE_SRC
+        sage: from sage_setup.find import is_package_or_namespace_package_dir
+        sage: is_package_or_namespace_package_dir(SAGE_SRC)
+        False
+
+    An ordinary package::
+
+        sage: is_package_or_namespace_package_dir(os.path.join(SAGE_SRC, 'sage', 'structure'))
+        True
+
+    A namespace package::
+
+        sage: is_package_or_namespace_package_dir(os.path.join(SAGE_SRC, 'sage', 'numerical', 'backends')
+        True
+
+    """
+    from Cython.Utils import is_package_dir
+    if is_package_dir(dirpath):
+        return True
+    return os.path.exists(dirpath) and not os.path.exists(os.path.join(dirpath, 'nonamespace'))
 
 def find_extra_files(src_dir, modules, cythonized_dir, special_filenames=[]):
     """
