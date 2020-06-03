@@ -71,7 +71,9 @@ log.debug('python_packages = {0}'.format(python_packages))
 print("Discovered Python/Cython sources, time: %.2f seconds." % (time.time() - t))
 
 import Cython.Build.Dependencies
-Cython.Build.Dependencies.is_package_dir = is_package_or_namespace_package_dir
+import Cython.Build.Cythonize
+import Cython.Utils
+Cython.Utils.is_package_dir = Cython.Build.Cythonize.is_package_dir = Cython.Build.Dependencies.is_package_dir = is_package_or_namespace_package_dir
 
 from sage_setup.command.sage_install import sage_install
 

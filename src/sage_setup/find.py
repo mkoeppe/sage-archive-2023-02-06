@@ -214,9 +214,11 @@ def is_package_or_namespace_package_dir(dirpath):
         True
 
     """
-    from Cython.Utils import is_package_dir
-    if is_package_dir(dirpath):
-        return True
+    PACKAGE_FILES = ("__init__.py", "__init__.pyc", "__init__.pyx", "__init__.pxd")
+    for filename in PACKAGE_FILES:
+        path = os.path.join(dirpath, filename)
+        if os.path.exists(path):
+            return True
     return os.path.exists(dirpath) and not os.path.exists(os.path.join(dirpath, 'nonamespace'))
 
 def find_extra_files(src_dir, modules, cythonized_dir, special_filenames=[]):
