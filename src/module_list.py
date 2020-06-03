@@ -63,48 +63,9 @@ try:
 except ValueError:
     pass
 
-#########################################################
-### Library order
-#########################################################
-
-# This list defines the *order* of linking libraries. A library should
-# be put *before* any library it links to. Cython allows
-# defining libraries using "# distutils: libraries = LIB". However, if
-# there are multiple libraries, the order is undefined so we need to
-# manually reorder the libraries according to this list. The order is
-# important in particular for Cygwin. Any libraries which are not
-# listed here will be added at the end of the list (without changing
-# their relative order). There is one exception: stdc++ is always put
-# at the very end of the list.
 from sage.env import cython_aliases
 aliases = cython_aliases()
-
 arb_dylib_name = aliases["ARB_LIBRARY"]
-library_order_list = aliases["SINGULAR_LIBRARIES"] + [
-    "ec", "ecm",
-] + aliases["LINBOX_LIBRARIES"] + aliases["FFLASFFPACK_LIBRARIES"] + aliases["GSL_LIBRARIES"] + [
-    "pari", "flint", "ratpoints", "ecl", "glpk", "ppl",
-    arb_dylib_name, "mpfi", "mpfr", "mpc", "gmp", "gmpxx",
-    "brial",
-    "brial_groebner",
-    "m4rie",
-] + m4ri_libs + [
-    "zn_poly", "gap",
-] + gd_libs + png_libs + [
-    "m", "readline", "Lfunction" ,
-] + cblas_libs + zlib_libs
-
-# Make a dict with library:order pairs, where the order are negative
-# integers sorted according to library_order_list. When sorting,
-# unlisted libraries have order 0, so they appear after the libraries
-# in library_order_list.
-n = len(library_order_list)
-library_order = {}
-for i in range(n):
-    lib = library_order_list[i]
-    library_order[lib] = i-n
-
-library_order["stdc++"] = 1000
 
 #############################################################
 ### List of modules
@@ -279,15 +240,6 @@ ext_modules = [
     Extension('sage.graphs.independent_sets',
               sources = ['sage/graphs/independent_sets.pyx']),
 
-    Extension('sage.graphs.graph_decompositions.fast_digraph',
-              sources = ['sage/graphs/graph_decompositions/fast_digraph.pyx']),
-
-    Extension('sage.graphs.graph_decompositions.vertex_separation',
-              sources = ['sage/graphs/graph_decompositions/vertex_separation.pyx']),
-
-    Extension('sage.graphs.graph_decompositions.graph_products',
-              sources = ['sage/graphs/graph_decompositions/graph_products.pyx']),
-
     Extension('sage.graphs.convexity_properties',
               sources = ['sage/graphs/convexity_properties.pyx']),
 
@@ -346,23 +298,9 @@ ext_modules = [
     Extension('sage.graphs.strongly_regular_db',
               sources = ['sage/graphs/strongly_regular_db.pyx']),
 
-    Extension('sage.graphs.graph_decompositions.rankwidth',
-              sources = ['sage/graphs/graph_decompositions/rankwidth.pyx'],
-              libraries=['rw']),
-
-    Extension('sage.graphs.graph_decompositions.bandwidth',
-              sources = ['sage/graphs/graph_decompositions/bandwidth.pyx']),
-
-    Extension('sage.graphs.graph_decompositions.cutwidth',
-              sources = ['sage/graphs/graph_decompositions/cutwidth.pyx']),
-
     OptionalExtension('sage.graphs.graph_decompositions.tdlib',
               sources = ['sage/graphs/graph_decompositions/tdlib.pyx'],
-              language="c++",
               package = 'tdlib'),
-
-    Extension('sage.graphs.graph_decompositions.clique_separators',
-              sources = ['sage/graphs/graph_decompositions/clique_separators.pyx']),
 
     Extension('sage.graphs.spanning_tree',
               sources = ['sage/graphs/spanning_tree.pyx']),
@@ -779,33 +717,6 @@ ext_modules = [
 
     Extension("sage.numerical.sdp",
               ["sage/numerical/sdp.pyx"]),
-
-    Extension("sage.numerical.backends.generic_backend",
-              ["sage/numerical/backends/generic_backend.pyx"]),
-
-    Extension("sage.numerical.backends.generic_sdp_backend",
-              ["sage/numerical/backends/generic_sdp_backend.pyx"]),
-
-    Extension("sage.numerical.backends.glpk_backend",
-              ["sage/numerical/backends/glpk_backend.pyx"]),
-
-    Extension("sage.numerical.backends.glpk_exact_backend",
-              ["sage/numerical/backends/glpk_exact_backend.pyx"]),
-
-    Extension("sage.numerical.backends.ppl_backend",
-              ["sage/numerical/backends/ppl_backend.pyx"]),
-
-    Extension("sage.numerical.backends.cvxopt_backend",
-              ["sage/numerical/backends/cvxopt_backend.pyx"]),
-
-    Extension("sage.numerical.backends.cvxopt_sdp_backend",
-              ["sage/numerical/backends/cvxopt_sdp_backend.pyx"]),
-
-    Extension("sage.numerical.backends.glpk_graph_backend",
-              ["sage/numerical/backends/glpk_graph_backend.pyx"]),
-
-    Extension("sage.numerical.backends.interactivelp_backend",
-              ["sage/numerical/backends/interactivelp_backend.pyx"]),
 
     ################################
     ##
