@@ -341,13 +341,10 @@ ext_modules = [
 
     OptionalExtension("sage.graphs.mcqd",
               ["sage/graphs/mcqd.pyx"],
-              language = "c++",
               package = 'mcqd'),
 
     OptionalExtension("sage.graphs.bliss",
               ["sage/graphs/bliss.pyx"],
-              language = "c++",
-              libraries = ['bliss'],
               package = 'bliss'),
 
     Extension('sage.graphs.planarity',
@@ -465,8 +462,6 @@ ext_modules = [
 
     OptionalExtension("sage.libs.fes",
              ["sage/libs/fes.pyx"],
-             language = "c",
-             libraries = ['fes'],
              package = 'fes'),
 
     Extension('sage.libs.flint.flint',
@@ -498,9 +493,7 @@ ext_modules = [
 
     OptionalExtension('sage.libs.sirocco',
                       sources = ["sage/libs/sirocco.pyx"],
-                      libraries = ["sirocco"],
-                      package="sirocco",
-                      language = 'c++'),
+                      package="sirocco"),
 
     Extension('*', ['sage/libs/linbox/*.pyx']),
 
@@ -521,7 +514,6 @@ ext_modules = [
 
     OptionalExtension("sage.libs.meataxe",
               sources = ['sage/libs/meataxe.pyx'],
-              libraries = ['mtx'],
               package = 'meataxe'),
 
     Extension('*', ['sage/libs/pari/*.pyx']),
@@ -729,7 +721,6 @@ ext_modules = [
 
     OptionalExtension("sage.matrix.matrix_gfpn_dense",
               sources = ['sage/matrix/matrix_gfpn_dense.pyx'],
-              libraries = ['mtx'],
               package = 'meataxe'),
 
     Extension('sage.matrix.misc',
