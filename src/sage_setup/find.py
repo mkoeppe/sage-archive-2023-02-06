@@ -219,7 +219,7 @@ def is_package_or_namespace_package_dir(dirpath):
         path = os.path.join(dirpath, filename)
         if os.path.exists(path):
             return True
-    return os.path.exists(dirpath) and not os.path.exists(os.path.join(dirpath, 'nonamespace'))
+    return os.path.exists(os.path.join(dirpath, 'namespace'))
 
 def find_extra_files(src_dir, modules, cythonized_dir, special_filenames=[]):
     """
