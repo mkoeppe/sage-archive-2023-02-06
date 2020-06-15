@@ -25,5 +25,7 @@ from sage_setup.command.sage_install import sage_install
 setup(
     cmdclass = dict(build_cython=sage_build_cython,
                     build_ext=sage_build_ext),
+    packages = python_packages,
+    py_modules  = python_modules,
     ext_modules = cython_modules
 )
