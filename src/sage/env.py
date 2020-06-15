@@ -358,15 +358,19 @@ def sage_include_directories(use_sources=False):
         sage: any(os.path.isfile(os.path.join(d, file)) for d in dirs)
         True
     """
-    import numpy
     import distutils.sysconfig
 
     TOP = SAGE_SRC if use_sources else SAGE_LIB
 
-    return [TOP,
+    dirs = [TOP,
             os.path.join(TOP, 'sage', 'ext'),
-            distutils.sysconfig.get_python_inc(),
-            numpy.get_include()]
+            distutils.sysconfig.get_python_inc()]
+    try:
+        import numpy
+        dirs.append(numpy.get_include())
+    except ModuleNotFoundError:
+        pass
+    return dirs
 
 
 def cython_aliases():
