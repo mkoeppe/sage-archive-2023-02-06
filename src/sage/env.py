@@ -296,7 +296,7 @@ GAP_SO= _get_shared_lib_filename('gap','')
 var('GAP_SO', GAP_SO)
 
 # post process
-if ' ' in DOT_SAGE:
+if DOT_SAGE is not None and ' ' in DOT_SAGE:
     if UNAME[:6] == 'CYGWIN':
         # on windows/cygwin it is typical for the home directory
         # to have a space in it.  Fortunately, users also have
