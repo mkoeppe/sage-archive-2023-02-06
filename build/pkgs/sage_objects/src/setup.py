@@ -3,7 +3,6 @@
 from distutils import log
 from setuptools import setup
 
-from sage_setup.command.sage_build import sage_build
 from sage_setup.command.sage_build_cython import sage_build_cython
 from sage_setup.command.sage_build_ext import sage_build_ext
 
@@ -19,8 +18,6 @@ import Cython.Build.Dependencies
 import Cython.Build.Cythonize
 import Cython.Utils
 Cython.Utils.is_package_dir = Cython.Build.Cythonize.is_package_dir = Cython.Build.Dependencies.is_package_dir = is_package_or_namespace_package_dir
-
-from sage_setup.command.sage_install import sage_install
 
 setup(
     cmdclass = dict(build_cython=sage_build_cython,
