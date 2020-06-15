@@ -1,2 +1,4 @@
 Cython
-pkgconfig
+pkgconfig     # really needed?
+cysignals
+gmpy2==2.1.0b1

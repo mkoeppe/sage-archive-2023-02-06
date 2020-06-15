@@ -3,3 +3,28 @@ graft sage/cpython
 include sage/__init__.py   # FIXME: Needs to become a namespace package
 include sage/env.py        # FIXME: sage_setup must be changed so it does not depend on it
 include sage/version.py    # FIXME: likewise
+
+graft sage/structure
+graft sage/categories
+include sage/misc/__init__.py
+include sage/misc/classcall_metaclass.*
+include sage/misc/inherit_comparison*.*
+include sage/misc/weak_dict.*
+include sage/misc/nested_class*.*
+include sage/misc/cachefunc.*
+include sage/misc/function_mangling.*
+include sage/misc/lazy_string.*
+
+include sage/ext/__init__.py
+include sage/ext/stdsage.pxd
+include sage/sets/__init__.py
+include sage/sets/pythonclass.*
+include sage/arith/__init__.py
+include sage/arith/power.*
+include sage/arith/numerical_approx.*
+# integers...
+include sage/arith/long.*
+include sage/rings/__init__.py
+include sage/rings/integer_fake.*
+include sage/libs/__init__.py
+graft sage/libs/gmp
