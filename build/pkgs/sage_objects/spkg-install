@@ -1,1 +1,62 @@
-../sagelib/spkg-install
+#!/usr/bin/env bash
+cd src
+## All sagelib-building is done by setup.py.
+## This is so that sagelib can be installed by standard Python procedures,
+## such as "./setup.py install" or "pip install ."
+##
+## We poison all environment variables that have paths to the sage source and build directories.
+## In this way we make sure that all of the sagelib build's source paths are communicated through
+## the current directory (for the source tree).
+## Building takes places in the build/ subdirectory.
+##
+## As a special exception, we feed SAGE_PKGS and SAGE_SPKG_INST.
+## They are needed by src/sage_setup/optional_extension.py
+## via src/sage/misc/package.py.  See meta-ticket #28815 for planned changes to this.
+
+export SAGE_PKGS="$SAGE_ROOT"/build/pkgs
+export SAGE_ROOT=/doesnotexist
+export SAGE_SRC=/doesnotexist
+export SAGE_SRC_ROOT=/doesnotexist
+export SAGE_DOC_SRC=/doesnotexist
+export SAGE_BUILD_DIR=/doesnotexist
+
+export PYTHON="$SAGE_LOCAL/bin/python3"
+
+# We also poison all directories below SAGE_LOCAL.
+
+export SAGE_ETC=/doesnotexist
+export SAGE_PKGCONFIG=/doesnotexist
+export SAGE_PKG_CONFIG_PATH=/doesnotexist
+export SAGE_SPKG_SCRIPTS=/doesnotexist
+export SAGE_DOC=/doesnotexist
+export SAGE_SHARE=/doesnotexist
+
+# Trac #29411: We cannot poison SAGE_LOCAL because the pkg-config script
+# installed by the pkgconf spkg, generated from build/pkgs/pkgconf/patches/pkg-config.in,
+# uses this variable.
+# export SAGE_LOCAL=/doesnotexist
+
+# --single-version-externally-managed prevents setuptools from installing an egg
+#time "$PYTHON" -u setup.py --no-user-cfg build install --single-version-externally-managed --root / || exit 1
+
+# However, setuptools.command.install_lib installs too much (via copy_tree).
+# FIXME: This should be fixed by a custom install command provided by sage_setup that uses find_extra_files
+# and respects sage_setup
+
+# Until this is ready, we just build an sdist (driven by MANIFEST.in):
+# - build/pkgs/sage_tdlib/src/MANIFEST.in includes/grafts some files/directories,
+# - build/pkgs/sagelib/src/MANIFEST.in excludes/prunes the same files/directories.
+# Then we pip-install the sdist.
+
+# (This duplicates the information encoded in the sage_setup directives in the files,
+# and is therefore not a good long-term solution.)
+
+dist_dir="$SAGE_DISTFILES"
+sage-python23 -u setup.py --no-user-cfg sdist --dist-dir "$dist_dir" || exit 1
+archive="$dist_dir"/$(sage-python23 -u setup.py --no-user-cfg --fullname | tail -1 2>/dev/null).tar.gz || exit 1
+# TODO: Go through sage-pip-install
+sage-python23 -m pip install --ignore-installed --verbose --no-deps --no-index --isolated --no-build-isolation "$archive" || exit 1
+
+if [ "$UNAME" = "CYGWIN" ]; then
+    sage-rebase.sh "$SAGE_LOCAL" 2>/dev/null;
+fi
