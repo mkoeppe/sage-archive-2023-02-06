@@ -170,7 +170,7 @@ when the system has no solutions over the rationals.
     which is not 1. ::
 
         sage: I.groebner_basis()
-        [x + 130433*y + 59079*z, y^2 + 3*y + 17220, y*z + 5*y + 14504, 2*y + 158864, z^2 + 17223, 2*z + 41856, 164878]
+        [x + y + 57119*z + 4, y^2 + 3*y + 17220, y*z + y + 26532, 2*y + 158864, z^2 + 17223, 2*z + 41856, 164878]
 
     Now for each prime `p` dividing this integer 164878, the Groebner
     basis of I modulo `p` will be non-trivial and will thus give a
@@ -1561,8 +1561,8 @@ class MPolynomialIdeal_singular_repr(
             sage: I2 = y*R
             sage: I3 = (x, y)*R
             sage: I4 = (x^2 + x*y*z, y^2 - z^3*y, z^3 + y^5*x*z)*R
-            sage: I1.intersection(I2, I3, I4)
-            Ideal (x*y*z^20 - x*y*z^3, x*y^2 - x*y*z^3, x^2*y + x*y*z^4) of Multivariate Polynomial Ring in x, y, z over Rational Field
+            sage: I1.intersection(I2, I3, I4).groebner_basis()
+            [x^2*y + x*y*z^4, x*y^2 - x*y*z^3, x*y*z^20 - x*y*z^3]
 
         The ideals must share the same ring::
 
@@ -4002,7 +4002,7 @@ class MPolynomialIdeal( MPolynomialIdeal_singular_repr, \
 
             sage: J.groebner_basis.set_cache(gb)  # optional - giacpy_sage
             sage: ideal(J.transformed_basis()).change_ring(P).interreduced_basis()  # testing trac 21884
-            [a - 60*c^3 + 158/7*c^2 + 8/7*c - 1, b + 30*c^3 - 79/7*c^2 + 3/7*c, c^4 - 10/21*c^3 + 1/84*c^2 + 1/84*c]
+            ...[a - 60*c^3 + 158/7*c^2 + 8/7*c - 1, b + 30*c^3 - 79/7*c^2 + 3/7*c, c^4 - 10/21*c^3 + 1/84*c^2 + 1/84*c]
 
         Giac's gbasis over `\QQ` can benefit from a probabilistic lifting and
         multi threaded operations::
@@ -4104,9 +4104,9 @@ class MPolynomialIdeal( MPolynomialIdeal_singular_repr, \
             sage: P.<a,b,c> = PolynomialRing(ZZ,3)
             sage: I = P * (a + 2*b + 2*c - 1, a^2 - a + 2*b^2 + 2*c^2, 2*a*b + 2*b*c - b)
             sage: I.groebner_basis()
-            [b^3 - 181*b*c^2 + 222*c^3 - 26*b*c - 146*c^2 + 19*b + 24*c,
-             2*b*c^2 - 48*c^3 + 3*b*c + 22*c^2 - 2*b - 2*c,
-             42*c^3 + 45*b^2 + 54*b*c + 22*c^2 - 13*b - 12*c,
+            [b^3 + b*c^2 + 12*c^3 + b^2 + b*c - 4*c^2,
+             2*b*c^2 - 6*c^3 - b^2 - b*c + 2*c^2,
+             42*c^3 + b^2 + 2*b*c - 14*c^2 + b,
              2*b^2 + 6*b*c + 6*c^2 - b - 2*c,
              10*b*c + 12*c^2 - b - 4*c,
              a + 2*b + 2*c - 1]
