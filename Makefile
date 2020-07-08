@@ -70,7 +70,7 @@ download:
 	export PATH=$$SAGE_ROOT/src/bin:$$PATH && \
 	./src/bin/sage-download-upstream
 
-dist: build/make/Makefile
+dist:
 	./sage --sdist
 
 # ssl: build Sage, and also install pyOpenSSL. This is necessary for
