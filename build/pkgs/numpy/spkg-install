@@ -41,5 +41,5 @@ sage-python23 setup.py \
         --no-user-cfg \
        install \
        --single-version-externally-managed \
-       --root "$SAGE_DESTDIR" \
+       --root / \
        ${NUMPY_FCONFIG} || sdh_die "Error building / installing numpy"
