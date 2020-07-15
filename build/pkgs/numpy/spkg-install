@@ -1,4 +1,20 @@
+#! /usr/bin/env bash
+
+# From sage-spkg.
+# For type=script packages, the build rule in build/make/Makefile sources
+# sage-env but not sage-dist-helpers.
+lib="$SAGE_ROOT/build/bin/sage-dist-helpers"
+source "$lib"
+if [ $? -ne 0 ]; then
+    echo >&2 "Error: failed to source $lib"
+    echo >&2 "Is $SAGE_ROOT the correct SAGE_ROOT?"
+    exit 1
+fi
+
+git clone https://github.com/mkoeppe/numpy.git src
 cd src
+git fetch origin 36d41a6cf76491d4d7066329f3c6483a8428c518
+git checkout 36d41a6cf76491d4d7066329f3c6483a8428c518
 
 set -e
 
