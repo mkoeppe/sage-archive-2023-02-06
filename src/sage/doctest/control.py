@@ -44,7 +44,11 @@ nodoctest_regex = re.compile(r'\s*(#+|%+|r"+|"+|\.\.)\s*nodoctest')
 optionaltag_regex = re.compile(r'^\w+$')
 
 # Optional tags which are always automatically added
-auto_optional_tags = set(['py3'])
+
+from sage.libs.arb.arb_version import version as arb_vers
+arb_tag = 'arb2' + arb_vers().split('.')[1]
+
+auto_optional_tags = set(['py3', arb_tag])
 
 
 class DocTestDefaults(SageObject):
