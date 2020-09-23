@@ -230,6 +230,7 @@ __append_to_doc(
      "cospectral_graphs",
      "CubeGraph",
      "CubeConnectedCycle",
+     "distance_regular_graph",
      "DorogovtsevGoltsevMendesGraph",
      "DoubleGrassmannGraph",
      "DoubleOddGraph",
@@ -2073,6 +2074,7 @@ class GraphGenerators():
     CubeGraph              = staticmethod(families.CubeGraph)
     CubeConnectedCycle     = staticmethod(families.CubeConnectedCycle)
     DipoleGraph            = staticmethod(families.DipoleGraph)
+    distance_regular_graph = staticmethod(distance_regular.distance_regular_graph)
     DorogovtsevGoltsevMendesGraph = staticmethod(families.DorogovtsevGoltsevMendesGraph)
     DoubleGrassmannGraph   = staticmethod(distance_regular.DoubleGrassmannGraph)
     DoubleOddGraph         = staticmethod(distance_regular.DoubleOddGraph)
