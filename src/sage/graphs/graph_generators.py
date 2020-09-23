@@ -230,6 +230,7 @@ __append_to_doc(
      "cospectral_graphs",
      "CubeGraph",
      "CubeConnectedCycle",
+     "distance_regular_graph",
      "DorogovtsevGoltsevMendesGraph",
      "DoubleGrassmannGraph",
      "DoubleOddGraph",
@@ -241,6 +242,9 @@ __append_to_doc(
      "FurerGadget",
      "fusenes",
      "FuzzyBallGraph",
+     "GeneralisedDodecagonGraph",
+     "GeneralisedHexagonGraph",
+     "GeneralisedOctagonGraph",
      "GeneralizedPetersenGraph",
      "GoethalsSeidelGraph",
      "GrassmannGraph",
@@ -2070,6 +2074,7 @@ class GraphGenerators():
     CubeGraph              = staticmethod(families.CubeGraph)
     CubeConnectedCycle     = staticmethod(families.CubeConnectedCycle)
     DipoleGraph            = staticmethod(families.DipoleGraph)
+    distance_regular_graph = staticmethod(distance_regular.distance_regular_graph)
     DorogovtsevGoltsevMendesGraph = staticmethod(families.DorogovtsevGoltsevMendesGraph)
     DoubleGrassmannGraph   = staticmethod(distance_regular.DoubleGrassmannGraph)
     DoubleOddGraph         = staticmethod(distance_regular.DoubleOddGraph)
@@ -2079,6 +2084,9 @@ class GraphGenerators():
     FriendshipGraph        = staticmethod(families.FriendshipGraph)
     FurerGadget            = staticmethod(families.FurerGadget)
     FuzzyBallGraph         = staticmethod(families.FuzzyBallGraph)
+    GeneralisedDodecagonGraph = staticmethod(distance_regular.GeneralisedDodecagonGraph)
+    GeneralisedHexagonGraph = staticmethod(distance_regular.GeneralisedHexagonGraph)
+    GeneralisedOctagonGraph = staticmethod(distance_regular.GeneralisedOctagonGraph)
     GeneralizedPetersenGraph = staticmethod(families.GeneralizedPetersenGraph)
     GoethalsSeidelGraph    = staticmethod(families.GoethalsSeidelGraph)
     GrassmannGraph         = staticmethod(distance_regular.GrassmannGraph)
