@@ -2702,6 +2702,10 @@ REFERENCES:
 
 .. [Har1994] Frank Harary. *Graph Theory*. Reading, MA: Addison-Wesley, 1994.
 
+.. [Harako2020] Shuichi Harako. *The second homology group of the commutative
+                case of Kontsevich's symplectic derivation Lie algebra*.
+                Preprint, 2020, :arxiv:`2006.06064`.
+
 .. [HarPri] F. Harary and G. Prins. The block-cutpoint-tree of
             a graph. Publ. Math. Debrecen 13 1966 103-107.
 
@@ -5613,7 +5617,7 @@ REFERENCES:
              algebra*. Cambridge Studies in Advanced Math., vol. 38,
              Cambridge Univ. Press, 1994.
 
-.. [Wel1988] Codes and Cryptography, Dominic Welsh, Oxford Sciences
+.. [Wel1988] Dominic Welsh, *Codes and Cryptography*. Oxford Sciences
              Publications, 1988
 
 .. [Wer1998] Annette Werner, Local heights on abelian varieties and
@@ -5631,6 +5635,9 @@ REFERENCES:
              American Journal of Mathematics,
              pages 150--168, 1932,
              `available on JSTOR <http://www.jstor.org/stable/2371086>`_
+
+.. [Wich1997] Tim Wichmann. Der FGLM Algorithmus - verallgemeinert und implementiert in Singular
+              Diploma Thesis (University of Kaiserslautern), 1997.
 
 .. [Wie2000] \B. Wieland. *A large dihedral symmetry of the set of
              alternating sign matrices*. Electron. J. Combin. 7 (2000).
