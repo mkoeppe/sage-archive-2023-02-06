@@ -1,0 +1,28 @@
+4D Reflexive Polytopes Database
+===============================
+
+Description
+-----------
+
+This package contains the database of 4-d reflexive polytopes with Hodge
+numbers as index.
+
+Based on the original list by Maximilian Kreuzer and Harald Skarke using
+their software PALP.
+
+License
+-------
+
+GPL v2+
+
+.. _spkg_maintainers:
+
+SPKG Maintainers
+----------------
+
+Volker Braun <vbraun.name@gmail.com>
+
+Dependencies
+------------
+
+None
