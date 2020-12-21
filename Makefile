@@ -208,7 +208,7 @@ ptestoptional: all
 ptestoptionallong: all
 	$(PTESTALL) --long --logfile=logs/ptestoptionallong.log
 
-configure: bootstrap src/doc/bootstrap configure.ac src/bin/sage-version.sh m4/*.m4 build/pkgs/*/spkg-configure.m4 build/pkgs/*/type build/pkgs/*.txt build/pkgs/*/distros/*.txt
+configure: bootstrap src/doc/bootstrap configure.ac src/bin/sage-version.sh m4/*.m4 build/pkgs/*/spkg-configure.m4 build/pkgs/*/type build/pkgs/*/distros/*.txt
 	./bootstrap -d
 
 install: all
@@ -220,9 +220,11 @@ install: all
 	@echo "from https://github.com/sagemath/binary-pkg"
 	@echo "******************************************************************"
 
+# Setting SAGE_PKGCONFIG is only so that make does not exit with
+# "This Makefile needs to be invoked by build/make/install".
 list:
 	@$(MAKE) --silent build/make/Makefile >&2
-	@$(MAKE) --silent -f build/make/Makefile SAGE_SPKG_INST=local $@
+	@$(MAKE) --silent -f build/make/Makefile SAGE_PKGCONFIG=dummy $@
 
 .PHONY: default build dist install micro_release \
 	misc-clean bdist-clean distclean bootstrap-clean maintainer-clean \
