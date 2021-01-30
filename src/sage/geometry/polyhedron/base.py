@@ -1024,10 +1024,10 @@ class Polyhedron_base(Element):
             sage: fcube = polytopes.hypercube(4)
             sage: tfcube = fcube.face_truncation(fcube.faces(0)[0])
             sage: sp = tfcube.schlegel_projection()
-            sage: for face in tfcube.faces(2): 
-            ....:     vertices = face.ambient_Vrepresentation() 
-            ....:     indices = [sp.coord_index_of(vector(x)) for x in vertices] 
-            ....:     projected_vertices = [sp.transformed_coords[i] for i in indices] 
+            sage: for face in tfcube.faces(2):
+            ....:     vertices = face.ambient_Vrepresentation()
+            ....:     indices = [sp.coord_index_of(vector(x)) for x in vertices]
+            ....:     projected_vertices = [sp.transformed_coords[i] for i in indices]
             ....:     assert Polyhedron(projected_vertices).dim() == 2
         """
         def merge_options(*opts):
@@ -6892,9 +6892,17 @@ class Polyhedron_base(Element):
         return self.faces(self.dimension()-1)
 
     @cached_method(do_pickle=True)
-    def f_vector(self):
+    def f_vector(self, num_threads=None, parallelization_depth=None):
         r"""
         Return the f-vector.
+
+        INPUT:
+
+        - ``num_threads`` -- integer (optional); specify the number of threads;
+          otherwise determined by :func:`~sage.parallel.ncpus.ncpus`
+
+        - ``parallelization_depth`` -- integer (optional); specify
+          how deep in the lattice the parallelization is done
 
         OUTPUT:
 
@@ -6951,7 +6959,7 @@ class Polyhedron_base(Element):
             sage: Q.f_vector.is_in_cache()
             True
         """
-        return self.combinatorial_polyhedron().f_vector()
+        return self.combinatorial_polyhedron().f_vector(num_threads, parallelization_depth)
 
     def flag_f_vector(self, *args):
         r"""
@@ -7993,7 +8001,7 @@ class Polyhedron_base(Element):
             sage: P.volume()
             0
             sage: P.volume(measure='induced')
-            sqrt(2)
+            1.414213562373095?
             sage: P.volume(measure='induced_rational') # optional -- latte_int
             1
 
@@ -8011,7 +8019,7 @@ class Polyhedron_base(Element):
             sage: P.volume()  # optional - pynormaliz
             0
             sage: P.volume(measure='induced')  # optional - pynormaliz
-            3/2*sqrt(3)
+            2.598076211353316?
             sage: P.volume(measure='induced',engine='normaliz')  # optional - pynormaliz
             2.598076211353316
             sage: P.volume(measure='induced_rational')  # optional - pynormaliz, latte_int
@@ -8029,9 +8037,9 @@ class Polyhedron_base(Element):
 
             sage: Dexact = polytopes.dodecahedron()
             sage: v = Dexact.faces(2)[0].as_polyhedron().volume(measure='induced', engine='internal'); v
-            -80*(55*sqrt(5) - 123)/sqrt(-6368*sqrt(5) + 14240)
+            1.53406271079097?
             sage: v = Dexact.faces(2)[4].as_polyhedron().volume(measure='induced', engine='internal'); v
-            -80*(55*sqrt(5) - 123)/sqrt(-6368*sqrt(5) + 14240)
+            1.53406271079097?
             sage: RDF(v)    # abs tol 1e-9
             1.53406271079044
 
@@ -8044,13 +8052,13 @@ class Polyhedron_base(Element):
 
             sage: I = Polyhedron([[-3, 0], [0, 9]])
             sage: I.volume(measure='induced')
-            3*sqrt(10)
+            9.48683298050514?
             sage: I.volume(measure='induced_rational') # optional -- latte_int
             3
 
             sage: T = Polyhedron([[3, 0, 0], [0, 4, 0], [0, 0, 5]])
             sage: T.volume(measure='induced')
-            1/2*sqrt(769)
+            13.86542462386205?
             sage: T.volume(measure='induced_rational') # optional -- latte_int
             1/2
 
@@ -8169,7 +8177,13 @@ class Polyhedron_base(Element):
             # use an orthogonal transformation, which preserves volume up to a factor provided by the transformation matrix
             A, b = self.affine_hull_projection(orthogonal=True, as_affine_map=True)
             Adet = (A.matrix().transpose() * A.matrix()).det()
-            return self.affine_hull_projection(orthogonal=True).volume(measure='ambient', engine=engine, **kwds) / sqrt(Adet)
+            scaled_volume = self.affine_hull_projection(orthogonal=True).volume(measure='ambient', engine=engine, **kwds)
+            if Adet.is_square():
+                sqrt_Adet = Adet.sqrt()
+            else:
+                sqrt_Adet = AA(Adet).sqrt()
+                scaled_volume = AA(scaled_volume)
+            return scaled_volume / sqrt_Adet
         elif measure == 'induced_rational':
             # if the polyhedron is unbounded, return infinity
             if not self.is_compact():
@@ -10057,10 +10071,10 @@ class Polyhedron_base(Element):
             sage: Adet = (A.matrix().transpose()*A.matrix()).det()
             sage: Pnormal.volume()
             1.53406271079097?
-            sage: Pgonal.volume()/sqrt(Adet)
+            sage: Pgonal.volume()/Adet.sqrt(extend=True)
             -80*(55*sqrt(5) - 123)/sqrt(-6368*sqrt(5) + 14240)
-            sage: Pgonal.volume()/sqrt(Adet).n(digits=20)
-            1.5340627107909646651
+            sage: Pgonal.volume()/AA(Adet).sqrt().n(digits=20)
+            1.5340627107909646813
             sage: AA(Pgonal.volume()^2) == (Pnormal.volume()^2)*AA(Adet)
             True
 
@@ -10179,10 +10193,10 @@ class Polyhedron_base(Element):
         """
         # handle trivial full-dimensional case
         if self.ambient_dim() == self.dim():
-            if as_affine_map: 
-                return linear_transformation(matrix(self.base_ring(), 
-                                                    self.dim(), 
-                                                    self.dim(), 
+            if as_affine_map:
+                return linear_transformation(matrix(self.base_ring(),
+                                                    self.dim(),
+                                                    self.dim(),
                                                     self.base_ring().one())), self.ambient_space().zero()
             return self
 
