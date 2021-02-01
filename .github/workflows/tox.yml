@@ -37,7 +37,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      max-parallel: 4
       matrix:
         tox_system_factor: [homebrew-macos]
         xcode_version_factor: [11.7, 12.2, 12.3, 12.4]
@@ -155,7 +154,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      max-parallel: 4
       matrix:
         tox_system_factor: [macos-nobootstrap]
         tox_packages_factor: [minimal]
