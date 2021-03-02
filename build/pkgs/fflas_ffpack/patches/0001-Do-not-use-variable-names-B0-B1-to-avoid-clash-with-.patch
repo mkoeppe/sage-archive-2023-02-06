@@ -1,4 +1,4 @@
-From 39a6e1a413b6e33f876c25a5b65e77c47c6775a0 Mon Sep 17 00:00:00 2001
+From d72a7643b7f8a1dedd12eadf89690c07ff6eed6e Mon Sep 17 00:00:00 2001
 From: Matthias Koeppe <mkoeppe@math.ucdavis.edu>
 Date: Mon, 1 Mar 2021 09:23:50 -0800
 Subject: [PATCH] Do not use variable names B0, B1 to avoid clash with
@@ -9,7 +9,7 @@ Subject: [PATCH] Do not use variable names B0, B1 to avoid clash with
  1 file changed, 25 insertions(+), 25 deletions(-)
 
 diff --git a/fflas-ffpack/fflas/fflas_igemm/igemm_kernels.inl b/fflas-ffpack/fflas/fflas_igemm/igemm_kernels.inl
-index c69d32c6..b646f2ff 100644
+index c69d32c6..0ca12110 100644
 --- a/fflas-ffpack/fflas/fflas_igemm/igemm_kernels.inl
 +++ b/fflas-ffpack/fflas/fflas_igemm/igemm_kernels.inl
 @@ -403,21 +403,21 @@ namespace FFLAS { namespace details { /*  kernels */
@@ -51,8 +51,8 @@ index c69d32c6..b646f2ff 100644
 -            vect_t B0,B1;
 -            B0 = simd::load(blB+0*StepB);
 -            B1 = simd::load(blB+1*StepB);
-+            vect_t A_0,A1;
-+            vect_t B_0,B1;
++            vect_t A_0,A_1;
++            vect_t B_0,B_1;
 +            B_0 = simd::load(blB+0*StepB);
 +            B_1 = simd::load(blB+1*StepB);
              if (K == number_kind::one) {
