@@ -10,7 +10,7 @@ on:
     # Allow to run manually
 
 env:
-  MAKE: make -j8
+  MAKE: make -j3
   SAGE_NUM_THREADS: 3
   SAGE_CHECK: warn
   SAGE_CHECK_PACKAGES: "!cython,!r,!python3,!nose,!pathpy,!gap,!cysignals,!linbox,!git,!ppl"
