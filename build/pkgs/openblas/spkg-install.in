@@ -13,7 +13,13 @@ if [ "x$SAGE_DEBUG" = "xyes" ]; then
 fi
 
 if [ "x$SAGE_FAT_BINARY" = "xyes" ]; then
-    OPENBLAS_CONFIGURE="$OPENBLAS_CONFIGURE DYNAMIC_ARCH=1"
+
+   if [ "$UNAME" = "CYGWIN" ]; then
+      # #29537: With DYNAMIC_ARCH on Cygwin, getting SIGILL
+      OPENBLAS_CONFIGURE="$OPENBLAS_CONFIGURE TARGET=PRESCOTT"
+   else
+      OPENBLAS_CONFIGURE="$OPENBLAS_CONFIGURE DYNAMIC_ARCH=1"
+   fi
 fi
 
 echo "Building OpenBLAS: $MAKE $OPENBLAS_CONFIGURE"
