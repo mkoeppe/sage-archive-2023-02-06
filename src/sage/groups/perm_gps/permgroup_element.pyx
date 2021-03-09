@@ -103,6 +103,8 @@ We create element of a permutation group of large degree::
 import copy
 import random
 
+from cpython cimport array
+
 import sage.groups.old as group
 
 from libc.stdlib cimport qsort
@@ -1465,29 +1467,112 @@ cdef class PermutationGroupElement(MultiplicativeGroupElement):
         """
         Return a hash for this permutation.
 
+        The algorithm hashes each pair ``(i, p(i))`` with ``i`` not a fixed
+        point and multiply these hash values together. In particular, the
+        hash value of the identity is one.
+
         EXAMPLES::
 
             sage: G = SymmetricGroup(5)
             sage: hash(G([2,1,5,3,4]))
-            -1203337681           # 32-bit
-            -1527414595000039889  # 64-bit
+            -2118201183           # 32-bit
+            -7490086752007303007  # 64-bit
+            sage: hash(G([1,2,3,4,5]))
+            1
 
         Check that the hash looks reasonable::
 
-            sage: s = set()
-            sage: s.update(map(hash,SymmetricGroup(0)))
-            sage: s.update(map(hash,SymmetricGroup(1)))
-            sage: s.update(map(hash,SymmetricGroup(2)))
-            sage: s.update(map(hash,SymmetricGroup(3)))
-            sage: s.update(map(hash,SymmetricGroup(4)))
-            sage: s.update(map(hash,SymmetricGroup(5)))
-            sage: len(s) == 1 + 1 + 2 + 6 + 24 + 120
+            sage: for n in range(1, 10):
+            ....:    G = SymmetricGroup(n)
+            ....:    assert hash(G.one()) == 1
+            ....:    assert len(set(map(hash, G))) == factorial(n)
+
+            sage: p = [(i,i+1) for i in range(1,601,2)]
+            sage: q = [tuple(range(1+i,601,3)) for i in range(3)]
+            sage: A = PermutationGroup([p,q])
+            sage: assert len(set(map(hash, A))) == A.cardinality()
+
+            sage: D = DihedralGroup(1024)
+            sage: assert len(set(map(hash, D))) == D.cardinality()
+
+        Compatibility with natural embeddings :trac:`31236`::
+
+            sage: S4 = SymmetricGroup(4)
+            sage: S5 = SymmetricGroup(5)
+            sage: S6 = SymmetricGroup(6)
+            sage: p = S4("(1,2)(3,4)")
+            sage: hash(p) == hash(S5(p)) == hash(S6(p))
             True
+            sage: p = S4("(1,3,4)")
+            sage: hash(p) == hash(S5(p)) == hash(S6(p))
+            True
+
+        Symmetric group with same but differently ordered ground sets::
+
+            sage: S1 = SymmetricGroup(4)
+            sage: S2 = SymmetricGroup([4,1,3,2])
+            sage: s1 = S1("(1,2,4,3)")
+            sage: s1
+            (1,2,4,3)
+            sage: s2 = S2("(1,2,4,3)")
+            sage: s2
+            (4,3,1,2)
+            sage: s1 == s2
+            True
+            sage: hash(s1) == hash(s2)
+            True
+            sage: assert all(hash(s) == hash(S2(s)) for s in S1)
+
+            sage: S1 = SymmetricGroup(FiniteEnumeratedSet(['a', 'b', 'c', 'd']))
+            sage: S2 = SymmetricGroup(FiniteEnumeratedSet(['c' ,'a', 'd', 'b']))
+            sage: assert all(hash(s) == hash(S2(s)) for s in S1)
+
+        Hashing elements from subgroups::
+
+            sage: P = PermutationGroup(["(1,2,3)", "(3,4,5)"])
+            sage: assert hash(P.an_element()) == hash(SymmetricGroup(5)(P.an_element()))
+
+            sage: D = DihedralGroup(4)
+            sage: E = D.subgroup([D.an_element()])
+            sage: assert hash(E.an_element()) == hash(D(E.an_element()))
         """
         cdef size_t i
-        cdef long ans = self.n
-        for i in range(self.n):
-            ans = (ans ^ (self.perm[i])) * 1000003L
+        cdef long ans = 1
+        cdef long hash_pair
+        cdef long mask1 = 9223372036854775837L
+        cdef long mask2 = 4611686018428627757L
+        cdef long mult1 = 13426746373773L
+        cdef long mult2 = 11283478275841L
+
+        cdef array.array hash_array
+
+        P = self._parent
+        if P._has_natural_domain():
+
+            for i in range(self.n):
+                if i != self.perm[i]:
+                    hash_pair = ((mask1 ^ (i + 1)) * mult1) ^ ((mask2 ^ (self.perm[i] + 1)) * mult2)
+
+                    # NOTE: multiples of 2 induce dramatic cancellations
+                    hash_pair |= 1
+
+                    ans *= hash_pair
+
+        else:
+            try:
+                hash_array = P._domain_hash_array
+            except AttributeError:
+                hash_array = P._domain_hash_array = array.array('l', [hash(x) for x in P._domain])
+
+            for i in range(self.n):
+                if i != self.perm[i]:
+                    hash_pair = ((mask1 ^ hash_array.data.as_longs[i]) * mult1) ^ ((mask2 ^ hash_array.data.as_longs[self.perm[i]]) * mult2)
+
+                    # NOTE: multiples of 2 induce dramatic cancellations
+                    hash_pair |= 1
+
+                    ans *= hash_pair
+
         return ans
 
     def tuple(self):
