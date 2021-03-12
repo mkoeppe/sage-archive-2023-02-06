@@ -12,11 +12,8 @@ on:
 env:
   MAKE: make -j3
   SAGE_NUM_THREADS: 3
-  SAGE_CHECK: warn
-  SAGE_CHECK_PACKAGES: "!cython,!r,!python3,!nose,!pathpy,!gap,!cysignals,!linbox,!git,!ppl"
   CYGWIN: winsymlinks:native
-  CONFIGURE_ARGS: --enable-experimental-packages --enable-download-from-upstream-url
-  SAGE_FAT_BINARY: yes
+  CONFIGURE_ARGS: --enable-experimental-packages --enable-download-from-upstream-url --enable-fat-binary
   SAGE_LOCAL: /opt/sage-${{ github.sha }}
 
 jobs:
@@ -38,6 +35,8 @@ jobs:
       matrix:
         pkgs: [standard]
     steps:
+    - run: |
+        cat /proc/cpuinfo
     - run: |
         git config --global core.autocrlf false
         git config --global core.symlinks true
@@ -97,6 +96,8 @@ jobs:
       matrix:
         pkgs: [standard]
     steps:
+    - run: |
+        cat /proc/cpuinfo
     - run: |
         git config --global core.autocrlf false
         git config --global core.symlinks true
@@ -162,6 +163,8 @@ jobs:
       matrix:
         pkgs: [standard]
     steps:
+    - run: |
+        cat /proc/cpuinfo
     - run: |
         git config --global core.autocrlf false
         git config --global core.symlinks true
@@ -232,6 +235,8 @@ jobs:
         pkgs: [standard]
     steps:
     - run: |
+        cat /proc/cpuinfo
+    - run: |
         git config --global core.autocrlf false
         git config --global core.symlinks true
     - uses: actions/checkout@v1
@@ -298,6 +303,8 @@ jobs:
       matrix:
         pkgs: [standard]
     steps:
+    - run: |
+        cat /proc/cpuinfo
     - run: |
         git config --global core.autocrlf false
         git config --global core.symlinks true
@@ -366,6 +373,8 @@ jobs:
         pkgs: [standard]
     steps:
     - run: |
+        cat /proc/cpuinfo
+    - run: |
         git config --global core.autocrlf false
         git config --global core.symlinks true
     - uses: actions/checkout@v1
@@ -432,6 +441,8 @@ jobs:
       matrix:
         pkgs: [standard]
     steps:
+    - run: |
+        cat /proc/cpuinfo
     - run: |
         git config --global core.autocrlf false
         git config --global core.symlinks true
@@ -504,6 +515,8 @@ jobs:
         pkgs: [standard]
     steps:
     - run: |
+        cat /proc/cpuinfo
+    - run: |
         git config --global core.autocrlf false
         git config --global core.symlinks true
     - uses: actions/checkout@v1
@@ -574,6 +587,8 @@ jobs:
       matrix:
         pkgs: [standard]
     steps:
+    - run: |
+        cat /proc/cpuinfo
     - run: |
         git config --global core.autocrlf false
         git config --global core.symlinks true
@@ -646,6 +661,8 @@ jobs:
         pkgs: [standard]
     steps:
     - run: |
+        cat /proc/cpuinfo
+    - run: |
         git config --global core.autocrlf false
         git config --global core.symlinks true
     - uses: actions/checkout@v1
@@ -715,6 +732,8 @@ jobs:
         pkgs: [standard]
     steps:
     - run: |
+        cat /proc/cpuinfo
+    - run: |
         git config --global core.autocrlf false
         git config --global core.symlinks true
     - uses: actions/checkout@v1
@@ -781,6 +800,8 @@ jobs:
       matrix:
         pkgs: [standard]
     steps:
+    - run: |
+        cat /proc/cpuinfo
     - run: |
         git config --global core.autocrlf false
         git config --global core.symlinks true
@@ -849,6 +870,8 @@ jobs:
         pkgs: [standard]
     steps:
     - run: |
+        cat /proc/cpuinfo
+    - run: |
         git config --global core.autocrlf false
         git config --global core.symlinks true
     - uses: actions/checkout@v1
@@ -916,6 +939,8 @@ jobs:
         pkgs: [standard]
     steps:
     - run: |
+        cat /proc/cpuinfo
+    - run: |
         git config --global core.autocrlf false
         git config --global core.symlinks true
     - uses: actions/checkout@v1
@@ -982,6 +1007,8 @@ jobs:
       matrix:
         pkgs: [standard]
     steps:
+    - run: |
+        cat /proc/cpuinfo
     - run: |
         git config --global core.autocrlf false
         git config --global core.symlinks true
