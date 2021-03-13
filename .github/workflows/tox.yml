@@ -38,7 +38,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      max-parallel: 4
+      max-parallel: 24
       matrix:
         tox_system_factor: [homebrew-macos, conda-forge-macos]
         tox_packages_factor: [minimal, standard]
@@ -162,7 +162,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      max-parallel: 4
+      max-parallel: 6
       matrix:
         os: [ macos-10.15, macos-11.0 ]
         tox_system_factor: [macos-nobootstrap, macos-nobootstrap-python3_pythonorg]
