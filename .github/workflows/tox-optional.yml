@@ -38,7 +38,7 @@ jobs:
       fail-fast: false
       max-parallel: 8
       matrix:
-        tox_system_factor: [ubuntu-bionic-i386, ubuntu-focal-i386, debian-buster-i386, centos-7-i386]
+        tox_system_factor: [ubuntu-bionic-i386, manylinux-2_24-i686, debian-buster-i386, centos-7-i386]
         tox_packages_factor: [maximal]
         targets_pattern: [0-g, h-o, p, q-z]
     env:
