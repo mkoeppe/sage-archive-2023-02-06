@@ -41,6 +41,9 @@ class build_py(setuptools_build_py):
         # This will resolve via SAGE_ROOT.
         SAGE_LOCAL = os.path.join(SAGE_ROOT, 'local')
         SAGE_LOCAL_BUILD = os.path.join(SAGE_ROOT_BUILD, 'local')
+        # The tree containing the wheel-building venv.  Not shipped as part of the
+        # The built wheels are to be shipped separately.
+        SAGE_VENV = os.path.join(SAGE_ROOT, f'venv-{python_tag}')
 
         if Path(SAGE_ROOT).is_symlink():
             # Remove symlink created by the sage_conf runtime
@@ -71,7 +74,7 @@ class build_py(setuptools_build_py):
                 # Previously built, start from there
                 os.rename(SAGE_LOCAL_BUILD, SAGE_LOCAL)
 
-            cmd = f"cd {SAGE_ROOT} && {SETENV} && ./configure --prefix={SAGE_LOCAL} --with-python={sys.executable} --with-system-python3=force --with-mp=gmp --without-system-mpfr --without-system-readline --enable-download-from-upstream-url --enable-fat-binary --disable-notebook --disable-r --disable-sagelib"
+            cmd = f"cd {SAGE_ROOT} && {SETENV} && ./configure --prefix={SAGE_LOCAL} --with-venv={SAGE_VENV} --with-python={sys.executable} --with-system-python3=force --with-mp=gmp --without-system-mpfr --without-system-readline --enable-download-from-upstream-url --enable-fat-binary --disable-notebook --disable-r --disable-sagelib"
             print(f"Running {cmd}")
             if os.system(cmd) != 0:
                 raise DistutilsSetupError("configure failed")
@@ -88,7 +91,7 @@ class build_py(setuptools_build_py):
             if os.system(cmd) != 0:
                 raise DistutilsSetupError("make build-local failed")
         finally:
-            # Delete old SAGE_ROOT_BUILD (if any), move new SAGE_ROOT there, symlink into build dir
+            # Delete old SAGE_ROOT_BUILD (if any), move new SAGE_ROOT there
             shutil.rmtree(SAGE_ROOT_BUILD, ignore_errors=True)
             os.rename(SAGE_ROOT, SAGE_ROOT_BUILD)
 
@@ -106,6 +109,7 @@ class build_py(setuptools_build_py):
         if not self.distribution.package_data:
             self.package_data = self.distribution.package_data = {}
 
+        # symlink into build dir
         HERE_SAGE_ROOT = os.path.join(HERE, 'sage_root')
         if os.path.islink(HERE_SAGE_ROOT):
             os.remove(HERE_SAGE_ROOT)
