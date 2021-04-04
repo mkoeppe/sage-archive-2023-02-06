@@ -19,6 +19,7 @@ class build_py(setuptools_build_py):
         self.plat_name = None
 
     def finalize_options(self):
+        setuptools_build_py.finalize_options(self)
         if self.plat_name is None:
             self.plat_name = self.get_finalized_command('bdist_wheel').plat_name
 
