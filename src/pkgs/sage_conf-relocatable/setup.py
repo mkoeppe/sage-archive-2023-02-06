@@ -112,6 +112,11 @@ class build_py(setuptools_build_py):
                 os.rename(SAGE_LOGS_BUILD, SAGE_LOGS)
 
             cmd = f"cd {SAGE_ROOT} && {SETENV} && ./configure --prefix={SAGE_LOCAL} --with-sage-venv={SAGE_VENV} --with-python={sys.executable} --with-system-python3=force --with-mp=gmp --without-system-mpfr --without-system-readline --enable-download-from-upstream-url --enable-fat-binary --disable-notebook --disable-r --disable-doc"
+            # These may be set by tox.ini
+            if 'CONFIGURED_CC' in os.environ:
+                cmd += ' CC="$CONFIGURED_CC"'
+            if 'CONFIGURED_CXX' in os.environ:
+                cmd += ' CXX="$CONFIGURED_CXX"'
             print(f"Running {cmd}")
             if os.system(cmd) != 0:
                 raise DistutilsSetupError("configure failed")
