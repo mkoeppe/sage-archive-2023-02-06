@@ -165,7 +165,6 @@ class build_scripts(distutils_build_scripts):
 
 setup(
     cmdclass=dict(build_py=build_py, build_scripts=build_scripts),
-    packages={'': []},
     # Do not mark the wheel as pure
     has_ext_modules=lambda: True
 )
