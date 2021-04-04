@@ -40,6 +40,17 @@ class build_py(setuptools_build_py):
         else:
             python_tag = f'{soabi}-{self.plat_name}'
 
+        # Have sagemath_standard (later, all packages using sage_setup.command.sage_egg_info)
+        # use an install_requires of sage_conf @ the GH URL.
+        cmd_bdist_wheel = self.get_finalized_command('bdist_wheel')
+        # from bdist_wheel.run:
+        impl_tag, abi_tag, plat_tag = cmd_bdist_wheel.get_tag()
+        archive_basename = "{}-{}-{}-{}".format(cmd_bdist_wheel.wheel_dist_name, impl_tag, abi_tag, plat_tag)
+        #
+        version = self.distribution.metadata.version
+        download_url = f'https://github.com/sagemath/sage-wheels/releases/download/{version}/{archive_basename}.whl'
+        SETENV += f' && export SAGE_CONF_WHEEL_URL={download_url}'
+
         # On macOS, /var -> /private/var; we work around the DESTDIR staging bug #31569.
         STICKY = '/var/tmp'
         STICKY = str(Path(STICKY).resolve())
@@ -100,7 +111,7 @@ class build_py(setuptools_build_py):
                 print(f"### Reusing {SAGE_LOGS_BUILD}")
                 os.rename(SAGE_LOGS_BUILD, SAGE_LOGS)
 
-            cmd = f"cd {SAGE_ROOT} && {SETENV} && ./configure --prefix={SAGE_LOCAL} --with-sage-venv={SAGE_VENV} --with-python={sys.executable} --with-system-python3=force --with-mp=gmp --without-system-mpfr --without-system-readline --enable-download-from-upstream-url --enable-fat-binary --disable-notebook --disable-r --disable-sagelib"
+            cmd = f"cd {SAGE_ROOT} && {SETENV} && ./configure --prefix={SAGE_LOCAL} --with-sage-venv={SAGE_VENV} --with-python={sys.executable} --with-system-python3=force --with-mp=gmp --without-system-mpfr --without-system-readline --enable-download-from-upstream-url --enable-fat-binary --disable-notebook --disable-r --disable-doc"
             print(f"Running {cmd}")
             if os.system(cmd) != 0:
                 raise DistutilsSetupError("configure failed")
@@ -108,11 +119,20 @@ class build_py(setuptools_build_py):
             shutil.copyfile(os.path.join(SAGE_ROOT, 'src', 'bin', 'sage-env-config'),
                             os.path.join(SAGE_ROOT, 'build', 'pkgs', 'sage_conf', 'src', 'bin', 'sage-env-config'))
 
+            # temporarily link in the sagelib src so that 'make sagelib' can work.
+            # FIXME: This needs a better solution.
+            os.symlink(Path(os.path.join(HERE, 'sage_root_source', 'build', 'pkgs', 'sagelib', 'src')).resolve(),
+                       os.path.join(SAGE_ROOT, 'build', 'pkgs', 'sagelib', 'src'))
+
             SETMAKE = 'if [ -z "$MAKE" ]; then export MAKE="make -j$(PATH=build/bin:$PATH build/bin/sage-build-num-threads | cut -d" " -f 2)"; fi'
             TARGETS = 'build'
             cmd = f'cd {SAGE_ROOT} && {SETENV} && {SETMAKE} && $MAKE V=0 {TARGETS}'
             if os.system(cmd) != 0:
                 raise DistutilsSetupError(f"make {TARGETS} failed")
+
+            # remove temporary link
+            os.remove(os.path.join(SAGE_ROOT, 'build', 'pkgs', 'sagelib', 'src'))
+
         finally:
             # Delete old SAGE_ROOT_BUILD (if any), move new SAGE_ROOT there
             shutil.rmtree(SAGE_ROOT_BUILD, ignore_errors=True)
@@ -180,8 +200,12 @@ class egg_info(setuptools_egg_info):
             if parts[-1] != 'any':
                 # Binary wheel, include as an install_requires
                 distribution = parts[0]
-                self.distribution.install_requires.append(
-                    f'{distribution} @ {download_url}/{f.name}')
+                if distribution not in ('Cython',              # has extension modules but binary compatibility is not needed
+                                        'sagemath_standard',   # we are a dependency of that
+                                        'tornado',             # does not need to run in the same process
+                                        ):
+                    self.distribution.install_requires.append(
+                        f'{distribution} @ {download_url}/{f.name}')
 
         setuptools_egg_info.finalize_options(self)
 
