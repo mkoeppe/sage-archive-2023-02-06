@@ -14,6 +14,14 @@ from distutils.errors import (DistutilsSetupError, DistutilsModuleError,
 
 class build_py(setuptools_build_py):
 
+    def initialize_options(self):
+        setuptools_build_py.initialize_options(self)
+        self.plat_name = None
+
+    def finalize_options(self):
+        if self.plat_name is None:
+            self.plat_name = self.get_finalized_command('bdist_wheel').plat_name
+
     def run(self):
         HERE = os.path.dirname(__file__)
         with open(os.path.join(HERE, 'VERSION.txt')) as f:
@@ -28,7 +36,7 @@ class build_py(setuptools_build_py):
             ldversion = sysconfig.get_config_var('LDVERSION')
             python_tag = f'{libdir_tag}-{ldversion}'
         else:
-            python_tag = soabi
+            python_tag = f'{soabi}-{self.plat_name}'
 
         # On macOS, /var -> /private/var; we work around the DESTDIR staging bug #31569.
         STICKY = '/var/tmp'
