@@ -9,6 +9,7 @@ import fnmatch
 from setuptools import setup
 from distutils.command.build_scripts import build_scripts as distutils_build_scripts
 from setuptools.command.build_py import build_py as setuptools_build_py
+from setuptools.command.egg_info import egg_info as setuptools_egg_info
 from distutils.errors import (DistutilsSetupError, DistutilsModuleError,
                               DistutilsOptionError)
 
@@ -163,8 +164,19 @@ class build_scripts(distutils_build_scripts):
         # self.distribution.entry_points['console_scripts'].append('sage-config=sage_conf:_main')
         distutils_build_scripts.run(self)
 
+class egg_info(setuptools_egg_info):
+
+    def finalize_options(self):
+        ## FIXME: Tried to make sure that egg_info is run _after_ build_py
+        ## cmd_build_py = self.get_finalized_command('build_py')
+        ## cmd_build_py.run()    # <-- runs it a second time, not what we want
+        self.distribution.install_requires = [
+           'numpy @ https://github.com/sagemath/sage-wheels/releases/download/9.3.rc1/numpy-1.19.5-cp38-cp38-macosx_10_15_x86_64.whl'
+        ]
+        setuptools_egg_info.finalize_options(self)
+
 setup(
-    cmdclass=dict(build_py=build_py, build_scripts=build_scripts),
+    cmdclass=dict(build_py=build_py, build_scripts=build_scripts, egg_info=egg_info),
     # Do not mark the wheel as pure
     has_ext_modules=lambda: True
 )
