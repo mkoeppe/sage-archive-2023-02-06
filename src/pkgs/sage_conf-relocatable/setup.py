@@ -56,6 +56,8 @@ class build_py(setuptools_build_py):
         venv_name = f'venv-{python_tag}'
         SAGE_VENV = os.path.join(SAGE_ROOT, venv_name)
         SAGE_VENV_BUILD = os.path.join(SAGE_ROOT_BUILD, venv_name)
+        self.SAGE_SPKG_WHEELS_BUILD = os.path.join(SAGE_VENV_BUILD,
+                                                   'var', 'lib', 'sage', 'wheels')
         # Also logs
         SAGE_LOGS = os.path.join(SAGE_ROOT, 'logs')
         SAGE_LOGS_BUILD = os.path.join(SAGE_ROOT_BUILD, 'logs')
@@ -167,12 +169,20 @@ class build_scripts(distutils_build_scripts):
 class egg_info(setuptools_egg_info):
 
     def finalize_options(self):
+        cmd_build_py = self.get_finalized_command('build_py')
         ## FIXME: Tried to make sure that egg_info is run _after_ build_py
-        ## cmd_build_py = self.get_finalized_command('build_py')
         ## cmd_build_py.run()    # <-- runs it a second time, not what we want
-        self.distribution.install_requires = [
-           'numpy @ https://github.com/sagemath/sage-wheels/releases/download/9.3.rc1/numpy-1.19.5-cp38-cp38-macosx_10_15_x86_64.whl'
-        ]
+        self.distribution.install_requires = []
+        version = self.distribution.metadata.version
+        download_url = f'https://github.com/sagemath/sage-wheels/releases/download/{version}'
+        for f in Path(cmd_build_py.SAGE_SPKG_WHEELS_BUILD).glob("*.whl"):
+            parts = str(f.stem).split('-')
+            if parts[-1] != 'any':
+                # Binary wheel, include as an install_requires
+                distribution = parts[0]
+                self.distribution.install_requires.append(
+                    f'{distribution} @ {download_url}/{f.name}')
+
         setuptools_egg_info.finalize_options(self)
 
 setup(
