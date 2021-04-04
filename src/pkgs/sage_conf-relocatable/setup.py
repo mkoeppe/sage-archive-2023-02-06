@@ -52,7 +52,12 @@ class build_py(setuptools_build_py):
         SAGE_LOCAL_BUILD = os.path.join(SAGE_ROOT_BUILD, 'local')
         # The tree containing the wheel-building venv.  Not shipped as part of the
         # The built wheels are to be shipped separately.
-        SAGE_VENV = os.path.join(SAGE_ROOT, f'venv-{python_tag}')
+        venv_name = f'venv-{python_tag}'
+        SAGE_VENV = os.path.join(SAGE_ROOT, venv_name)
+        SAGE_VENV_BUILD = os.path.join(SAGE_ROOT_BUILD, venv_name)
+        # Also logs
+        SAGE_LOGS = os.path.join(SAGE_ROOT, 'logs')
+        SAGE_LOGS_BUILD = os.path.join(SAGE_ROOT_BUILD, 'logs')
 
         if Path(SAGE_ROOT).is_symlink():
             # Remove symlink created by the sage_conf runtime
@@ -81,24 +86,30 @@ class build_py(setuptools_build_py):
 
             if os.path.exists(SAGE_LOCAL_BUILD):
                 # Previously built, start from there
+                print(f"### Reusing {SAGE_LOCAL_BUILD}")
                 os.rename(SAGE_LOCAL_BUILD, SAGE_LOCAL)
 
-            cmd = f"cd {SAGE_ROOT} && {SETENV} && ./configure --prefix={SAGE_LOCAL} --with-venv={SAGE_VENV} --with-python={sys.executable} --with-system-python3=force --with-mp=gmp --without-system-mpfr --without-system-readline --enable-download-from-upstream-url --enable-fat-binary --disable-notebook --disable-r --disable-sagelib"
+            if os.path.exists(SAGE_VENV_BUILD):
+                print(f"### Reusing {SAGE_VENV_BUILD}")
+                os.rename(SAGE_VENV_BUILD, SAGE_VENV)
+
+            if os.path.exists(SAGE_LOGS_BUILD):
+                print(f"### Reusing {SAGE_LOGS_BUILD}")
+                os.rename(SAGE_LOGS_BUILD, SAGE_LOGS)
+
+            cmd = f"cd {SAGE_ROOT} && {SETENV} && ./configure --prefix={SAGE_LOCAL} --with-sage-venv={SAGE_VENV} --with-python={sys.executable} --with-system-python3=force --with-mp=gmp --without-system-mpfr --without-system-readline --enable-download-from-upstream-url --enable-fat-binary --disable-notebook --disable-r --disable-sagelib"
             print(f"Running {cmd}")
             if os.system(cmd) != 0:
                 raise DistutilsSetupError("configure failed")
 
-            # build-local only builds the non-Python packages of the Sage distribution.
-            # It still makes an (empty) venv in SAGE_LOCAL, which is unused by default;
-            # but a user could use "make build-venv" to build compatible wheels for all Python packages.
-            # TODO: A target to only build wheels of tricky packages
-            # (that use native libraries shared with other packages).
+            shutil.copyfile(os.path.join(SAGE_ROOT, 'src', 'bin', 'sage-env-config'),
+                            os.path.join(SAGE_ROOT, 'build', 'pkgs', 'sage_conf', 'src', 'bin', 'sage-env-config'))
+
             SETMAKE = 'if [ -z "$MAKE" ]; then export MAKE="make -j$(PATH=build/bin:$PATH build/bin/sage-build-num-threads | cut -d" " -f 2)"; fi'
             TARGETS = 'build'
-            #TARGETS = 'base-toolchain giac'
             cmd = f'cd {SAGE_ROOT} && {SETENV} && {SETMAKE} && $MAKE V=0 {TARGETS}'
             if os.system(cmd) != 0:
-                raise DistutilsSetupError("make build-local failed")
+                raise DistutilsSetupError(f"make {TARGETS} failed")
         finally:
             # Delete old SAGE_ROOT_BUILD (if any), move new SAGE_ROOT there
             shutil.rmtree(SAGE_ROOT_BUILD, ignore_errors=True)
@@ -154,6 +165,7 @@ class build_scripts(distutils_build_scripts):
 
 setup(
     cmdclass=dict(build_py=build_py, build_scripts=build_scripts),
+    packages={'': []},
     # Do not mark the wheel as pure
     has_ext_modules=lambda: True
 )
