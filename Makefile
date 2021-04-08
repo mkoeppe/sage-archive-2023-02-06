@@ -79,6 +79,19 @@ download:
 dist: build/make/Makefile
 	./sage --sdist
 
+pypi-sdists:
+	./sage --sh build/pkgs/sage_conf/spkg-src
+	./sage --sh build/pkgs/sage_sws2rst/spkg-src
+	./sage --sh build/pkgs/sage_docbuild/spkg-src
+	./sage --sh build/pkgs/sagelib/spkg-src
+	@echo "Built sdists are in upstream/"
+
+# We run this with the python3 from 'sage -sh' so that we get the configured python3 and our versions of setuptools/wheel.
+# But we run it outside of 'sage -sh' because we do not want all the environment settings.
+sage-wheels: config.status setuptools wheel
+	PYTHON3=$$(./sage -sh -c 'command -v python3') && (cd src/pkgs/sage_conf-relocatable/ && $$PYTHON3 setup.py bdist_wheel)
+	@echo "Built wheels are in src/pkgs/sage_conf-relocatable/dist/ and src/pkgs/sage_conf-relocatable/sage_root/venv-cpython*/var/lib/sage/wheels/"
+
 # ssl: build Sage, and also install pyOpenSSL. This is necessary for
 # running the secure notebook. This make target requires internet
 # access. Note that this requires that your system have OpenSSL
