@@ -77,22 +77,24 @@ class build_py(setuptools_build_py):
             # Remove symlink created by the sage_conf runtime
             os.remove(SAGE_ROOT)
 
-        try:
-            # Within this try...finally block, SAGE_ROOT is a physical directory.
+        # config.status and other configure output has to be writable.
+        # So (until the Sage distribution supports VPATH builds - #21469), we have to make a copy of sage_root_source.
+        #
+        # The file exclusions here duplicate what is done in MANIFEST.in
+        def ignore(path, names):
+            # exclude embedded src trees -- except for the one of sage_conf
+            if any(fnmatch.fnmatch(path, spkg) for spkg in ('*/build/pkgs/sagelib',
+                                                            '*/build/pkgs/sage_docbuild',
+                                                            '*/build/pkgs/sage_sws2rst')):
+                return ['src']
+            return []
+        shutil.copytree(os.path.join(HERE, 'sage_root_source'), SAGE_ROOT,
+                        ignore=ignore)  # will fail if already exists
 
-            # config.status and other configure output has to be writable.
-            # So (until the Sage distribution supports VPATH builds - #21469), we have to make a copy of sage_root_source.
-            #
-            # The file exclusions here duplicate what is done in MANIFEST.in
-            def ignore(path, names):
-                # exclude embedded src trees -- except for the one of sage_conf
-                if any(fnmatch.fnmatch(path, spkg) for spkg in ('*/build/pkgs/sagelib',
-                                                                '*/build/pkgs/sage_docbuild',
-                                                                '*/build/pkgs/sage_sws2rst')):
-                    return ['src']
-                return []
-            shutil.copytree(os.path.join(HERE, 'sage_root_source'), SAGE_ROOT,
-                            ignore=ignore)  # will fail if already exists
+        try:
+            print(f"Created SAGE_ROOT={SAGE_ROOT}")
+            # Because of the above 'copytree',
+            # within this try...finally block, SAGE_ROOT is a physical directory.
 
             # Use our copy of the sage_conf template, which contains the relocation logic
             shutil.copyfile(os.path.join(HERE, 'sage_conf.py.in'),
@@ -101,15 +103,18 @@ class build_py(setuptools_build_py):
             if os.path.exists(SAGE_LOCAL_BUILD):
                 # Previously built, start from there
                 print(f"### Reusing {SAGE_LOCAL_BUILD}")
-                os.rename(SAGE_LOCAL_BUILD, SAGE_LOCAL)
+                shutil.move(SAGE_LOCAL_BUILD, SAGE_LOCAL)
 
             if os.path.exists(SAGE_VENV_BUILD):
                 print(f"### Reusing {SAGE_VENV_BUILD}")
-                os.rename(SAGE_VENV_BUILD, SAGE_VENV)
+                shutil.move(SAGE_VENV_BUILD, SAGE_VENV)
 
             if os.path.exists(SAGE_LOGS_BUILD):
                 print(f"### Reusing {SAGE_LOGS_BUILD}")
-                os.rename(SAGE_LOGS_BUILD, SAGE_LOGS)
+                shutil.move(SAGE_LOGS_BUILD, SAGE_LOGS)
+
+            # Delete old SAGE_ROOT_BUILD (if any), all the useful things have been moved from there.
+            shutil.rmtree(SAGE_ROOT_BUILD, ignore_errors=True)
 
             cmd = f"cd {SAGE_ROOT} && {SETENV} && ./configure --prefix={SAGE_LOCAL} --with-sage-venv={SAGE_VENV} --with-python={sys.executable} --enable-build-as-root --with-system-python3=force --with-mp=gmp --without-system-mpfr --without-system-readline --without-system-boost --without-system-boost_cropped --without-system-zeromq --enable-download-from-upstream-url --enable-fat-binary --disable-notebook --disable-r --disable-doc"
             # These may be set by tox.ini
@@ -138,10 +143,12 @@ class build_py(setuptools_build_py):
             # remove temporary link
             os.remove(os.path.join(SAGE_ROOT, 'build', 'pkgs', 'sagelib', 'src'))
 
-        finally:
-            # Delete old SAGE_ROOT_BUILD (if any), move new SAGE_ROOT there
-            shutil.rmtree(SAGE_ROOT_BUILD, ignore_errors=True)
-            os.rename(SAGE_ROOT, SAGE_ROOT_BUILD)
+        except Exception as e:
+            print(e)
+            print(f"Left SAGE_ROOT={SAGE_ROOT} in place. To reuse its contents for the next build, rename it to {SAGE_ROOT_BUILD} first")
+
+        else:
+            shutil.move(SAGE_ROOT, SAGE_ROOT_BUILD)
 
         # Install configuration
         shutil.copyfile(os.path.join(SAGE_ROOT_BUILD, 'build', 'pkgs', 'sage_conf', 'src', 'sage_conf.py'),
