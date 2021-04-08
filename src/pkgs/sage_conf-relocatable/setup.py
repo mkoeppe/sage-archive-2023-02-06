@@ -111,7 +111,7 @@ class build_py(setuptools_build_py):
                 print(f"### Reusing {SAGE_LOGS_BUILD}")
                 os.rename(SAGE_LOGS_BUILD, SAGE_LOGS)
 
-            cmd = f"cd {SAGE_ROOT} && {SETENV} && ./configure --prefix={SAGE_LOCAL} --with-sage-venv={SAGE_VENV} --with-python={sys.executable} --enable-build-as-root --with-system-python3=force --with-mp=gmp --without-system-mpfr --without-system-readline --without-system-boost --without-system-boost_cropped --enable-download-from-upstream-url --enable-fat-binary --disable-notebook --disable-r --disable-doc"
+            cmd = f"cd {SAGE_ROOT} && {SETENV} && ./configure --prefix={SAGE_LOCAL} --with-sage-venv={SAGE_VENV} --with-python={sys.executable} --enable-build-as-root --with-system-python3=force --with-mp=gmp --without-system-mpfr --without-system-readline --without-system-boost --without-system-boost_cropped --without-system-zeromq --enable-download-from-upstream-url --enable-fat-binary --disable-notebook --disable-r --disable-doc"
             # These may be set by tox.ini
             if 'CONFIGURED_CC' in os.environ:
                 cmd += ' CC="$CONFIGURED_CC"'
