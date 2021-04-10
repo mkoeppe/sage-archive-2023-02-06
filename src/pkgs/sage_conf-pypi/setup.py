@@ -17,7 +17,7 @@ class build_py(distutils_build_py):
         with open(os.path.join(HERE, 'VERSION.txt')) as f:
             sage_version = f.read().strip()
         # For convenience, set up the homebrew env automatically. This is a no-op if homebrew is not present.
-        SETENV = '. .homebrew-build-env 2>&1; :'
+        SETENV = '(. ./.homebrew-build-env 2> /dev/null || :)'
         # Until pynac is repackaged as a pip-installable package (#30534), SAGE_LOCAL still has to be specific to
         # the Python version.  Note that as of pynac-0.7.26.sage-2020-04-03, on Cygwin, pynac is linked through
         # to libpython; whereas on all other platforms, it is not linked through, so we only key it to the SOABI.
@@ -40,7 +40,7 @@ class build_py(distutils_build_py):
                 shutil.copytree('sage_root', SAGE_ROOT)  # will fail if already exists
             except Exception:
                 raise DistutilsSetupError(f"the directory SAGE_ROOT={SAGE_ROOT} already exists but it is not configured.  Please remove it and try again.")
-            cmd = f"cd {SAGE_ROOT} && {SETENV} && ./configure --prefix={SAGE_LOCAL} --with-python={sys.executable} --with-system-python3=force --disable-notebook --disable-sagelib"
+            cmd = f"cd {SAGE_ROOT} && {SETENV} && ./configure --prefix={SAGE_LOCAL} --with-python={sys.executable} --enable-build-as-root --with-system-python3=force --disable-notebook --disable-sagelib"
             print(f"Running {cmd}")
             if os.system(cmd) != 0:
                 raise DistutilsSetupError("configure failed")
