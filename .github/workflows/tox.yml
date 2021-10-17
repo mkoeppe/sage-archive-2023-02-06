@@ -109,6 +109,6 @@ jobs:
         if: contains(matrix.stage, '1')
       - uses: actions/upload-artifact@v2
         with:
-          path: /tmp/sage-local-${{ matrix.stage }}.tar
+          path: /tmp/sage-${{ env.TOX_ENV }}-${{ matrix.stage }}.tar
           name: ${{ env.LOCAL_ARTIFACT_NAME }}
         if: always()
