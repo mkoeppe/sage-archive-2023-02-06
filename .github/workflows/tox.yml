@@ -68,13 +68,13 @@ jobs:
         if: contains(matrix.tox_system_factor, 'python3_pythonorg')
       - uses: actions/download-artifact@v2
         with:
+          path: sage-local-artifact
           name: ${{ env.LOCAL_ARTIFACT_NAME }}
-          path: ${{ env.GITHUB_WORKSPACE }}
         if: contains(matrix.stage, '2')
       - name: Extract sage-local artifact
         # This is macOS tar -- cannot use --listed-incremental
         run: |
-          .github/workflows/extract-sage-local.sh $GITHUB_WORKSPACE/sage-local-*.tar
+          .github/workflows/extract-sage-local.sh sage-local-artifact/sage-local-*.tar
         if: contains(matrix.stage, '2')
       - name: Build and test with tox
         # We use a high parallelization on purpose in order to catch possible parallelization bugs in the build scripts.
@@ -105,10 +105,10 @@ jobs:
         # This is macOS tar -- cannot use --remove-files.
         # We remove the $SAGE_LOCAL/lib64 link, which will be recreated by the next stage.
         run: |
-          (cd .tox/$TOX_ENV && rm -f "local/lib64" && tar -cf $GITHUB_WORKSPACE/sage-${{ env.TOX_ENV }}-${{ matrix.stage }}.tar $(pwd))
+          (cd .tox/$TOX_ENV && rm -f "local/lib64" && tar -cf - $(pwd)) > sage-local-artifact/sage-${{ env.TOX_ENV }}-${{ matrix.stage }}.tar
         if: contains(matrix.stage, '1')
       - uses: actions/upload-artifact@v2
         with:
-          path: ${{ env.GITHUB_WORKSPACE }}/sage-${{ env.TOX_ENV }}-${{ matrix.stage }}.tar
+          path: sage-local-artifact/sage-${{ env.TOX_ENV }}-${{ matrix.stage }}.tar
           name: ${{ env.LOCAL_ARTIFACT_NAME }}
         if: always()
