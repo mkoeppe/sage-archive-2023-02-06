@@ -105,7 +105,7 @@ jobs:
         # This is macOS tar -- cannot use --remove-files.
         # We remove the $SAGE_LOCAL/lib64 link, which will be recreated by the next stage.
         run: |
-          (cd .tox/$TOX_ENV && rm -f "local/lib64" && tar -cf - $(pwd)) > sage-local-artifact/sage-${{ env.TOX_ENV }}-${{ matrix.stage }}.tar
+          mkdir -p sage-local-artifact && (cd .tox/$TOX_ENV && rm -f "local/lib64" && tar -cf - $(pwd)) > sage-local-artifact/sage-${{ env.TOX_ENV }}-${{ matrix.stage }}.tar
         if: contains(matrix.stage, '1')
       - uses: actions/upload-artifact@v2
         with:
