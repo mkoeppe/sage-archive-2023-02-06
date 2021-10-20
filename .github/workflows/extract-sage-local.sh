@@ -20,7 +20,7 @@ done
 dummy="$SAGE_LOCAL"/var/lib/sage/installed/.dummy
 if [ -f "$dummy" ]; then
     touch "$dummy"
-    for inst in "$SAGE_LOCAL" "$SAGE_LOCAL"/var/lib/sage/venv*; do
+    for tree in "$SAGE_LOCAL" "$SAGE_LOCAL"/var/lib/sage/venv*; do
         inst="$tree"/var/lib/sage/installed
         if [ -d "$inst" ]; then
             # -r is --reference; the macOS version of touch does not accept the long option.
