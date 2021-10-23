@@ -1,5 +1,5 @@
 SAGE_SPKG_CONFIGURE([toml], [
-    sage_spkg_install_toml=yes
+    SAGE_PYTHON_PACKAGE_CHECK([toml])
   ], [dnl REQUIRED-CHECK
     AC_REQUIRE([SAGE_SPKG_CONFIGURE_TOX])
     dnl toml is only needed when we cannot use system tox.
