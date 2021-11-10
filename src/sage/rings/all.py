@@ -12,34 +12,7 @@ Rings
 # ****************************************************************************
 from sage.misc.lazy_import import lazy_import
 
-# Ring base classes
-from .ring import (Ring, Field, CommutativeRing, IntegralDomain,
-    DedekindDomain, PrincipalIdealDomain, EuclideanDomain)
-
-# Ring element base classes
-from sage.structure.element import (CommutativeAlgebraElement,
-        RingElement, CommutativeRingElement, IntegralDomainElement,
-        DedekindDomainElement, PrincipalIdealDomainElement,
-        EuclideanDomainElement, FieldElement)
-
-# Ideals
-from .ideal import Ideal
-ideal = Ideal
-
-# Quotient
-from .quotient_ring import QuotientRing
-
-# Infinities
-from .infinity import infinity, Infinity, InfinityRing, unsigned_infinity, UnsignedInfinityRing
-
-# Rational integers.
-from .integer_ring import IntegerRing, ZZ, crt_basis
-from .integer import Integer
-
-# Rational numbers
-from .rational_field import RationalField, QQ
-from .rational import Rational
-Rationals = RationalField
+from .all__sagemath_polyhedra import *
 
 # Integers modulo n.
 from sage.rings.finite_rings.integer_mod_ring import IntegerModRing, Zmod
@@ -72,8 +45,6 @@ from .semirings.all import *
 from .real_mpfr import (RealField, RR,
                        create_RealNumber as RealNumber)   # this is used by the preparser to wrap real literals -- very important.
 Reals = RealField
-
-from .real_double import RealDoubleField, RDF, RealDoubleElement
 
 from .real_lazy import RealLazyField, RLF, ComplexLazyField, CLF
 
@@ -138,9 +109,6 @@ from .big_oh import O
 # Fraction field
 from .fraction_field import FractionField
 Frac = FractionField
-
-# Localization
-from .localization import Localization
 
 # c-finite sequences
 from .cfinite_sequence import CFiniteSequence, CFiniteSequences

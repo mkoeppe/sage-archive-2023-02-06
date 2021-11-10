@@ -183,6 +183,7 @@ from sage.rings.real_arb import RealBallField
 from sage.rings.real_mpfi cimport RealIntervalField_class
 from sage.rings.real_mpfr cimport RealField_class, RealField, RealNumber
 from sage.rings.ring import Field
+import sage.rings.abc
 from sage.structure.element cimport Element, ModuleElement
 from sage.structure.parent cimport Parent
 from sage.structure.unique_representation import UniqueRepresentation

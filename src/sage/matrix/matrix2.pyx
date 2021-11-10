@@ -3629,7 +3629,11 @@ cdef class Matrix(Matrix1):
         """
         from sage.matrix.matrix_space import MatrixSpace
         tm = verbose("computing right kernel matrix over a number field for %sx%s matrix" % (self.nrows(), self.ncols()),level=1)
-        basis = self.__pari__().matker()
+        try:
+            self_pari = self.__pari__()
+        except ImportError:
+            return None, None
+        basis = self_pari.matker()
         # Coerce PARI representations into the number field
         R = self.base_ring()
         basis = [[R(x) for x in row] for row in basis]
@@ -7344,7 +7348,10 @@ cdef class Matrix(Matrix1):
         cdef Matrix d, a
         cdef Py_ssize_t r, c
         cdef bint transformation = 'transformation' in kwds and kwds['transformation']
-        if self._base_ring == ZZ:
+
+        if self._base_ring == ZZ and self.dense_matrix() is not self:
+            # delegate to the specialized echelon form
+            # implemented in matrix_integer_dense
             if 'include_zero_rows' in kwds and not kwds['include_zero_rows']:
                 raise ValueError("cannot echelonize in place and delete zero rows")
             if transformation:

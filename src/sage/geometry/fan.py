@@ -238,19 +238,19 @@ from copy import copy
 from warnings import warn
 
 from sage.structure.richcmp import richcmp_method, richcmp
-from sage.combinat.combination import Combinations
-from sage.combinat.posets.posets import FinitePoset
+from sage.misc.lazy_import import lazy_import
+lazy_import('sage.combinat.combination', 'Combinations')
+lazy_import('sage.combinat.posets.posets', 'FinitePoset')
 from sage.geometry.cone import (_ambient_space_point,
                                 Cone,
                                 ConvexRationalPolyhedralCone,
                                 IntegralRayCollection,
                                 is_Cone,
                                 normalize_rays)
-from sage.geometry.hasse_diagram import lattice_from_incidences
+lazy_import('sage.geometry.hasse_diagram', 'lattice_from_incidences')
 from sage.geometry.point_collection import PointCollection
 from sage.geometry.toric_lattice import ToricLattice, is_ToricLattice
-from sage.geometry.toric_plotter import ToricPlotter
-from sage.graphs.digraph import DiGraph
+lazy_import('sage.geometry.toric_plotter', 'ToricPlotter')
 from sage.matrix.constructor import matrix
 from sage.misc.cachefunc import cached_method
 from sage.misc.misc import walltime
@@ -504,7 +504,7 @@ def Fan(cones, rays=None, lattice=None, check=True, normalize=True,
         sage: fan = Fan([c1, c2], allow_arrangement=True)
         sage: fan.ngenerating_cones()
         7
-        sage: fan.plot()
+        sage: fan.plot()  # optional - sage.plot
         Graphics3d Object
 
     Cones of different dimension::
@@ -524,7 +524,7 @@ def Fan(cones, rays=None, lattice=None, check=True, normalize=True,
         sage: c3 = Cone([[0, 1, 1], [1, 0, 1], [0, -1, 1], [-1, 0, 1]])
         sage: c1 = Cone([[0, 0, 1]])
         sage: fan1 = Fan([c1, c3], allow_arrangement=True)
-        sage: fan1.plot()
+        sage: fan1.plot()  # optional - sage.plot
         Graphics3d Object
 
     A 3-d cone and two 2-d cones::
@@ -1465,6 +1465,7 @@ class RationalPolyhedralFan(IntegralRayCollection, Callable, Container):
         else:
             # For general fans we will "merge" face lattices of generating
             # cones.
+            from sage.graphs.digraph import DiGraph
             L = DiGraph()
             face_to_rays = dict()  # face |---> (indices of fan rays)
             rays_to_index = dict()  # (indices of fan rays) |---> face index
@@ -2970,7 +2971,7 @@ class RationalPolyhedralFan(IntegralRayCollection, Callable, Container):
         EXAMPLES::
 
             sage: fan = toric_varieties.dP6().fan()
-            sage: fan.plot()
+            sage: fan.plot()  # optional - sage.plot
             Graphics object consisting of 31 graphics primitives
         """
         tp = ToricPlotter(options, self.lattice().degree(), self.rays())

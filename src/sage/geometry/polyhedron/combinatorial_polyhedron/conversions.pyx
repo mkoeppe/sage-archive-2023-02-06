@@ -70,7 +70,6 @@ AUTHOR:
 from memory_allocator                 cimport MemoryAllocator
 
 from sage.structure.element import is_Matrix
-from sage.matrix.matrix_integer_dense cimport Matrix_integer_dense
 
 from .list_of_faces                   cimport ListOfFaces
 from .face_data_structure             cimport face_next_atom, face_add_atom_safe, facet_set_coatom, face_clear
@@ -187,7 +186,7 @@ cdef int incidences_to_bit_rep(tuple incidences, face_t output) except -1:
             # Vrep ``entry`` is contained in the face, so set the corresponding bit
             face_add_atom_safe(output, entry)
 
-def incidence_matrix_to_bit_rep_of_facets(Matrix_integer_dense matrix):
+def incidence_matrix_to_bit_rep_of_facets(matrix):
     r"""
     Initialize facets in Bit-representation as :class:`~sage.geometry.polyhedron.combinatorial_polyhedron.list_of_faces.ListOfFaces`.
 
@@ -232,26 +231,35 @@ def incidence_matrix_to_bit_rep_of_facets(Matrix_integer_dense matrix):
     """
     # Output will be a ``ListOfFaces`` with ``matrix.ncols()`` faces and
     # ``matrix.nrows()`` Vrep.
-    cdef size_t nrows = matrix._nrows
-    cdef size_t ncols = matrix._ncols
+    cdef size_t nrows = matrix.nrows()
+    cdef size_t ncols = matrix.ncols()
     cdef ListOfFaces facets = ListOfFaces(ncols, nrows, ncols)
     cdef face_t output
     cdef size_t entry       # index for the entries in tup
 
     cdef size_t i
-    for i in range(ncols):
-        output = facets.data.faces[i]
-        facet_set_coatom(output, i)
+    try:
+        for i in range(ncols):
+            output = facets.data.faces[i]
+            facet_set_coatom(output, i)
 
-        # Filling each facet with its Vrep-incidences, which "is" the
-        # "i-th column" of the original matrix (but we have transposed).
-        for entry in range(nrows):
-            if not matrix.get_is_zero_unsafe(entry, i):
-                # Vrep ``entry`` is contained in the face, so set the corresponding bit
-                face_add_atom_safe(output, entry)
+            # Filling each facet with its Vrep-incidences, which "is" the
+            # "i-th column" of the original matrix (but we have transposed).
+            for entry in range(nrows):
+                if not matrix.get_is_zero_unsafe(entry, i):
+                    # Vrep ``entry`` is contained in the face, so set the corresponding bit
+                    face_add_atom_safe(output, entry)
+    except AttributeError:
+        # fall back to using general matrix API
+        for i in range(ncols):
+            output = facets.data.faces[i]
+            facet_set_coatom(output, i)
+            for entry in range(nrows):
+                if matrix[entry, i]:
+                    face_add_atom_safe(output, entry)
     return facets
 
-def incidence_matrix_to_bit_rep_of_Vrep(Matrix_integer_dense matrix):
+def incidence_matrix_to_bit_rep_of_Vrep(matrix):
     r"""
     Initialize Vrepresentatives in Bit-representation as :class:`~sage.geometry.polyhedron.combinatorial_polyhedron.list_of_faces.ListOfFaces`.
 

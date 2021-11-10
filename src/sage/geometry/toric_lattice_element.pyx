@@ -96,7 +96,6 @@ Or you can create a homomorphism from one lattice to any other::
 
 from sage.libs.gmp.mpz cimport *
 
-from sage.geometry.toric_plotter import ToricPlotter
 from sage.modules.vector_integer_dense cimport Vector_integer_dense
 from sage.structure.coerce_exceptions import CoercionException
 from sage.structure.element cimport Element, Vector
@@ -394,9 +393,10 @@ cdef class ToricLatticeElement(Vector_integer_dense):
 
             sage: N = ToricLattice(3)
             sage: n = N(1,2,3)
-            sage: n.plot()
+            sage: n.plot()  # optional - sage.plot
             Graphics3d Object
         """
+        from sage.geometry.toric_plotter import ToricPlotter
         tp = ToricPlotter(options, self.parent().degree())
         tp.adjust_options()
         return tp.plot_points([self])
