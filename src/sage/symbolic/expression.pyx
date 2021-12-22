@@ -1124,7 +1124,7 @@ cdef class Expression(Expression_abc):
         return AsciiArt(self._sympy_character_art(False).splitlines())
 
     def _unicode_art_(self):
-        u"""
+        """
         Unicode art magic method.
 
         See :mod:`sage.typeset.unicode_art` for details.
@@ -1240,7 +1240,7 @@ cdef class Expression(Expression_abc):
 
             sage: a = (pi + 2).sin()
             sage: a._maple_init_()
-            'sin((pi)+(2))'
+            'sin((Pi)+(2))'
 
             sage: a = (pi + 2).sin()
             sage: a._mathematica_init_()
@@ -1274,7 +1274,7 @@ cdef class Expression(Expression_abc):
             sage: gap(e + pi^2 + x^3)
             x^3 + pi^2 + e
         """
-        return '"%s"'%repr(self)
+        return '"%s"' % repr(self)
 
     def _singular_init_(self):
         """
@@ -4850,6 +4850,11 @@ cdef class Expression(Expression_abc):
 
             sage: exp(log(1+x)*(1/x)).series(x)
             (e) + (-1/2*e)*x + (11/24*e)*x^2 + (-7/16*e)*x^3 + (2447/5760*e)*x^4 + ...
+
+        Check that :trac:`32640` is fixed::
+
+            sage: ((1 - x)^-x).series(x, 8)
+            1 + 1*x^2 + 1/2*x^3 + 5/6*x^4 + 3/4*x^5 + 33/40*x^6 + 5/6*x^7 + Order(x^8)
         """
         cdef Expression symbol0 = self.coerce_in(symbol)
         cdef GEx x
