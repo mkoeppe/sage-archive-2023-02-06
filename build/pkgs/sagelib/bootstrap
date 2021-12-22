@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/sh -x
 set -e
 for infile in src/*.m4; do
     if [ -f "$infile" ]; then

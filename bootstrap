@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 
 ########################################################################
 # Regenerate auto-generated files (e.g. configure)
