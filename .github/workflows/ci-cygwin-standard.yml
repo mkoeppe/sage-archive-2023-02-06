@@ -43,12 +43,14 @@ jobs:
       shell: bash {0}
       run: |
         choco --version
+        choco install python39 --version 3.9.9-3 --source cygwin
+        choco install python39-devel --version 3.9.9-3 --source cygwin
         PACKAGES="python39 python39-pip"
         choco install $PACKAGES --source cygwin
     - name: tox
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cat /proc/cpuinfo'
-        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.8 -m pip install tox'
+        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.9 -m pip install tox'
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cd $(cygpath -u "$GITHUB_WORKSPACE") && PREFIX="${{ env.SAGE_LOCAL }}" tox -e local-cygwin-choco-${{ matrix.pkgs }} -- $TARGETS'
     - name: Prepare logs artifact
       shell: bash
@@ -103,12 +105,14 @@ jobs:
       shell: bash {0}
       run: |
         choco --version
+        choco install python39 --version 3.9.9-3 --source cygwin
+        choco install python39-devel --version 3.9.9-3 --source cygwin
         PACKAGES="python39 python39-pip"
         choco install $PACKAGES --source cygwin
     - name: tox
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cat /proc/cpuinfo'
-        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.8 -m pip install tox'
+        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.9 -m pip install tox'
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cd $(cygpath -u "$GITHUB_WORKSPACE") && PREFIX="${{ env.SAGE_LOCAL }}" tox -e local-cygwin-choco-${{ matrix.pkgs }} -- $TARGETS'
     - name: Prepare logs artifact
       shell: bash
@@ -168,6 +172,8 @@ jobs:
       shell: bash {0}
       run: |
         choco --version
+        choco install python39 --version 3.9.9-3 --source cygwin
+        choco install python39-devel --version 3.9.9-3 --source cygwin
         PACKAGES="python39 python39-pip"
         choco install $PACKAGES --source cygwin
     - uses: actions/download-artifact@v2
@@ -180,7 +186,7 @@ jobs:
     - name: tox
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cat /proc/cpuinfo'
-        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.8 -m pip install tox'
+        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.9 -m pip install tox'
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cd $(cygpath -u "$GITHUB_WORKSPACE") && PREFIX="${{ env.SAGE_LOCAL }}" tox -e local-cygwin-choco-${{ matrix.pkgs }} -- $TARGETS'
     - name: Prepare logs artifact
       shell: bash
@@ -238,6 +244,8 @@ jobs:
       shell: bash {0}
       run: |
         choco --version
+        choco install python39 --version 3.9.9-3 --source cygwin
+        choco install python39-devel --version 3.9.9-3 --source cygwin
         PACKAGES="python39 python39-pip"
         choco install $PACKAGES --source cygwin
     - uses: actions/download-artifact@v2
@@ -250,7 +258,7 @@ jobs:
     - name: tox
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cat /proc/cpuinfo'
-        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.8 -m pip install tox'
+        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.9 -m pip install tox'
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cd $(cygpath -u "$GITHUB_WORKSPACE") && PREFIX="${{ env.SAGE_LOCAL }}" tox -e local-cygwin-choco-${{ matrix.pkgs }} -- $TARGETS'
     - name: Prepare logs artifact
       shell: bash
@@ -306,6 +314,8 @@ jobs:
       shell: bash {0}
       run: |
         choco --version
+        choco install python39 --version 3.9.9-3 --source cygwin
+        choco install python39-devel --version 3.9.9-3 --source cygwin
         PACKAGES="python39 python39-pip"
         choco install $PACKAGES --source cygwin
     - uses: actions/download-artifact@v2
@@ -318,7 +328,7 @@ jobs:
     - name: tox
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cat /proc/cpuinfo'
-        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.8 -m pip install tox'
+        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.9 -m pip install tox'
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cd $(cygpath -u "$GITHUB_WORKSPACE") && PREFIX="${{ env.SAGE_LOCAL }}" tox -e local-cygwin-choco-${{ matrix.pkgs }} -- $TARGETS'
     - name: Prepare logs artifact
       shell: bash
@@ -374,6 +384,8 @@ jobs:
       shell: bash {0}
       run: |
         choco --version
+        choco install python39 --version 3.9.9-3 --source cygwin
+        choco install python39-devel --version 3.9.9-3 --source cygwin
         PACKAGES="python39 python39-pip"
         choco install $PACKAGES --source cygwin
     - uses: actions/download-artifact@v2
@@ -386,7 +398,7 @@ jobs:
     - name: tox
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cat /proc/cpuinfo'
-        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.8 -m pip install tox'
+        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.9 -m pip install tox'
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cd $(cygpath -u "$GITHUB_WORKSPACE") && PREFIX="${{ env.SAGE_LOCAL }}" tox -e local-cygwin-choco-${{ matrix.pkgs }} -- $TARGETS'
     - name: Prepare logs artifact
       shell: bash
@@ -442,6 +454,8 @@ jobs:
       shell: bash {0}
       run: |
         choco --version
+        choco install python39 --version 3.9.9-3 --source cygwin
+        choco install python39-devel --version 3.9.9-3 --source cygwin
         PACKAGES="python39 python39-pip"
         choco install $PACKAGES --source cygwin
     - uses: actions/download-artifact@v2
@@ -454,7 +468,7 @@ jobs:
     - name: tox
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cat /proc/cpuinfo'
-        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.8 -m pip install tox'
+        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.9 -m pip install tox'
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cd $(cygpath -u "$GITHUB_WORKSPACE") && PREFIX="${{ env.SAGE_LOCAL }}" tox -e local-cygwin-choco-${{ matrix.pkgs }} -- $TARGETS'
     - name: Prepare logs artifact
       shell: bash
@@ -514,6 +528,8 @@ jobs:
       shell: bash {0}
       run: |
         choco --version
+        choco install python39 --version 3.9.9-3 --source cygwin
+        choco install python39-devel --version 3.9.9-3 --source cygwin
         PACKAGES="python39 python39-pip"
         choco install $PACKAGES --source cygwin
     - uses: actions/download-artifact@v2
@@ -526,7 +542,7 @@ jobs:
     - name: tox
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cat /proc/cpuinfo'
-        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.8 -m pip install tox'
+        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.9 -m pip install tox'
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cd $(cygpath -u "$GITHUB_WORKSPACE") && PREFIX="${{ env.SAGE_LOCAL }}" tox -e local-cygwin-choco-${{ matrix.pkgs }} -- $TARGETS'
     - name: Prepare logs artifact
       shell: bash
@@ -586,6 +602,8 @@ jobs:
       shell: bash {0}
       run: |
         choco --version
+        choco install python39 --version 3.9.9-3 --source cygwin
+        choco install python39-devel --version 3.9.9-3 --source cygwin
         PACKAGES="python39 python39-pip"
         choco install $PACKAGES --source cygwin
     - uses: actions/download-artifact@v2
@@ -598,7 +616,7 @@ jobs:
     - name: tox
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cat /proc/cpuinfo'
-        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.8 -m pip install tox'
+        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.9 -m pip install tox'
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cd $(cygpath -u "$GITHUB_WORKSPACE") && PREFIX="${{ env.SAGE_LOCAL }}" tox -e local-cygwin-choco-${{ matrix.pkgs }} -- $TARGETS'
     - name: Prepare logs artifact
       shell: bash
@@ -658,6 +676,8 @@ jobs:
       shell: bash {0}
       run: |
         choco --version
+        choco install python39 --version 3.9.9-3 --source cygwin
+        choco install python39-devel --version 3.9.9-3 --source cygwin
         PACKAGES="python39 python39-pip"
         choco install $PACKAGES --source cygwin
     - uses: actions/download-artifact@v2
@@ -670,7 +690,7 @@ jobs:
     - name: tox
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cat /proc/cpuinfo'
-        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.8 -m pip install tox'
+        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.9 -m pip install tox'
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cd $(cygpath -u "$GITHUB_WORKSPACE") && PREFIX="${{ env.SAGE_LOCAL }}" tox -e local-cygwin-choco-${{ matrix.pkgs }} -- $TARGETS'
     - name: Prepare logs artifact
       shell: bash
@@ -728,6 +748,8 @@ jobs:
       shell: bash {0}
       run: |
         choco --version
+        choco install python39 --version 3.9.9-3 --source cygwin
+        choco install python39-devel --version 3.9.9-3 --source cygwin
         PACKAGES="python39 python39-pip"
         choco install $PACKAGES --source cygwin
     - uses: actions/download-artifact@v2
@@ -740,7 +762,7 @@ jobs:
     - name: tox
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cat /proc/cpuinfo'
-        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.8 -m pip install tox'
+        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.9 -m pip install tox'
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cd $(cygpath -u "$GITHUB_WORKSPACE") && PREFIX="${{ env.SAGE_LOCAL }}" tox -e local-cygwin-choco-${{ matrix.pkgs }} -- $TARGETS'
     - name: Prepare logs artifact
       shell: bash
@@ -796,6 +818,8 @@ jobs:
       shell: bash {0}
       run: |
         choco --version
+        choco install python39 --version 3.9.9-3 --source cygwin
+        choco install python39-devel --version 3.9.9-3 --source cygwin
         PACKAGES="python39 python39-pip"
         choco install $PACKAGES --source cygwin
     - uses: actions/download-artifact@v2
@@ -808,7 +832,7 @@ jobs:
     - name: tox
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cat /proc/cpuinfo'
-        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.8 -m pip install tox'
+        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.9 -m pip install tox'
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cd $(cygpath -u "$GITHUB_WORKSPACE") && PREFIX="${{ env.SAGE_LOCAL }}" tox -e local-cygwin-choco-${{ matrix.pkgs }} -- $TARGETS'
     - name: Prepare logs artifact
       shell: bash
@@ -864,6 +888,8 @@ jobs:
       shell: bash {0}
       run: |
         choco --version
+        choco install python39 --version 3.9.9-3 --source cygwin
+        choco install python39-devel --version 3.9.9-3 --source cygwin
         PACKAGES="python39 python39-pip"
         choco install $PACKAGES --source cygwin
     - uses: actions/download-artifact@v2
@@ -876,7 +902,7 @@ jobs:
     - name: tox
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cat /proc/cpuinfo'
-        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.8 -m pip install tox'
+        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.9 -m pip install tox'
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cd $(cygpath -u "$GITHUB_WORKSPACE") && PREFIX="${{ env.SAGE_LOCAL }}" tox -e local-cygwin-choco-${{ matrix.pkgs }} -- $TARGETS'
     - name: Prepare logs artifact
       shell: bash
@@ -932,6 +958,8 @@ jobs:
       shell: bash {0}
       run: |
         choco --version
+        choco install python39 --version 3.9.9-3 --source cygwin
+        choco install python39-devel --version 3.9.9-3 --source cygwin
         PACKAGES="python39 python39-pip"
         choco install $PACKAGES --source cygwin
     - uses: actions/download-artifact@v2
@@ -944,7 +972,7 @@ jobs:
     - name: tox
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cat /proc/cpuinfo'
-        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.8 -m pip install tox'
+        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.9 -m pip install tox'
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cd $(cygpath -u "$GITHUB_WORKSPACE") && PREFIX="${{ env.SAGE_LOCAL }}" tox -e local-cygwin-choco-${{ matrix.pkgs }} -- $TARGETS'
     - name: Prepare logs artifact
       shell: bash
@@ -1000,6 +1028,8 @@ jobs:
       shell: bash {0}
       run: |
         choco --version
+        choco install python39 --version 3.9.9-3 --source cygwin
+        choco install python39-devel --version 3.9.9-3 --source cygwin
         PACKAGES="python39 python39-pip"
         choco install $PACKAGES --source cygwin
     - uses: actions/download-artifact@v2
@@ -1012,7 +1042,7 @@ jobs:
     - name: tox
       run: |
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cat /proc/cpuinfo'
-        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.8 -m pip install tox'
+        C:\\tools\\cygwin\\bin\\bash -l -x -c 'python3.9 -m pip install tox'
         C:\\tools\\cygwin\\bin\\bash -l -x -c 'cd $(cygpath -u "$GITHUB_WORKSPACE") && PREFIX="${{ env.SAGE_LOCAL }}" tox -e local-cygwin-choco-${{ matrix.pkgs }} -- $TARGETS'
     - name: Prepare logs artifact
       shell: bash
