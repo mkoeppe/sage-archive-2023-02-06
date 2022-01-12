@@ -221,7 +221,7 @@ cat <<EOF
 
 FROM configured as with-base-toolchain
 # We first compile base-toolchain because otherwise lots of packages are missing their dependency on 'patch'
-ARG NUMPROC=8
+ARG NUMPROC=5
 ENV MAKE="make -j\${NUMPROC}"
 ARG USE_MAKEFLAGS="-k V=0"
 ENV SAGE_CHECK=warn
@@ -230,7 +230,7 @@ ENV SAGE_CHECK_PACKAGES="!cython,!r,!python3,!gap,!cysignals,!linbox,!git,!ppl,!
 $RUN make \${USE_MAKEFLAGS} base-toolchain $ENDRUN
 
 FROM with-base-toolchain as with-targets-pre
-ARG NUMPROC=8
+ARG NUMPROC=5
 ENV MAKE="make -j\${NUMPROC}"
 ARG USE_MAKEFLAGS="-k V=0"
 ENV SAGE_CHECK=warn
@@ -240,7 +240,7 @@ ARG TARGETS_PRE="all-sage-local"
 $RUN make SAGE_SPKG="sage-spkg -y -o" \${USE_MAKEFLAGS} \${TARGETS_PRE} $ENDRUN
 
 FROM with-targets-pre as with-targets
-ARG NUMPROC=8
+ARG NUMPROC=5
 ENV MAKE="make -j\${NUMPROC}"
 ARG USE_MAKEFLAGS="-k V=0"
 ENV SAGE_CHECK=warn
@@ -250,7 +250,7 @@ ARG TARGETS="build"
 $RUN make SAGE_SPKG="sage-spkg -y -o" \${USE_MAKEFLAGS} \${TARGETS} $ENDRUN
 
 FROM with-targets as with-targets-optional
-ARG NUMPROC=8
+ARG NUMPROC=5
 ENV MAKE="make -j\${NUMPROC}"
 ARG USE_MAKEFLAGS="-k V=0"
 ENV SAGE_CHECK=warn
