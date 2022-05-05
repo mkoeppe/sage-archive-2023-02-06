@@ -94,13 +94,20 @@ jobs:
       # https://cibuildwheel.readthedocs.io/en/stable/options/#requires-python
       CIBW_PROJECT_REQUIRES_PYTHON: ">=3.8"
     steps:
+      - uses: actions/checkout@v2
+
       - uses: actions/download-artifact@v2
         with:
           name: dist
           path: dist
 
       - name: Build platform wheels
+        # https://cibuildwheel.readthedocs.io/en/stable/options/#before-all
         run: |
+          export PATH=build/bin:$PATH
+          SYSTEM=$(sage-guess-package-system)
+          PACKAGES=$(sage-get-system-packages $SYSTEM gmp)
+          export CIBW_BEFORE_ALL=$(sage-print-system-package-command $SYSTEM --yes --no-install-recommends install $PACKAGES)
           pipx run cibuildwheel==2.5.0 dist/${{ matrix.pkg }}*.tar.gz
 
       - uses: actions/upload-artifact@v2
