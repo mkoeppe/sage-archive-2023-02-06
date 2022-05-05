@@ -84,6 +84,8 @@ jobs:
         os: [ubuntu-20.04, macos-10.15]
         pkg: [sagemath-objects, sagemath-categories]
     env:
+      # SPKGs to install as system packages
+      SPKGS: gmp mpfr mpc
       # Disable building PyPy wheels on all platforms
       CIBW_SKIP: pp*
       # From https://cibuildwheel.readthedocs.io/en/stable/options/#examples_2:
@@ -105,9 +107,7 @@ jobs:
         # https://cibuildwheel.readthedocs.io/en/stable/options/#before-all
         run: |
           export PATH=build/bin:$PATH
-          SYSTEM=$(sage-guess-package-system)
-          PACKAGES=$(sage-get-system-packages $SYSTEM gmp)
-          export CIBW_BEFORE_ALL=$(sage-print-system-package-command $SYSTEM --yes --no-install-recommends install $PACKAGES)
+          export CIBW_BEFORE_ALL="$(sage-print-system-package-command debian --yes --no-install-recommends install $(sage-get-system-packages debian $SPKGS)) || $(sage-print-system-package-command fedora --yes --no-install-recommends install $(sage-get-system-packages fedora $SPKGS)) || $(sage-print-system-package-command homebrew --yes --no-install-recommends install $(sage-get-system-packages homebrew $SPKGS))"
           pipx run cibuildwheel==2.5.0 dist/${{ matrix.pkg }}*.tar.gz
 
       - uses: actions/upload-artifact@v2
