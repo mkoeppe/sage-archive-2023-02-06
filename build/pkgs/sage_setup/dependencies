@@ -2,4 +2,3 @@ $(PYTHON) cython pkgconfig jinja2 $(SAGE_ROOT)/pkgs/sage-setup/sage_setup/autoge
 
 ----------
 All lines of this file are ignored except the first.
-It is copied by SAGE_ROOT/build/make/install into SAGE_ROOT/build/make/Makefile.
