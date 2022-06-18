@@ -85,7 +85,7 @@ jobs:
       # SPKGs to install as system packages
       SPKGS: _bootstrap _prereq
       # Non-Python packages to install as spkgs
-      TARGETS_PRE: gmp mpfr mpc
+      TARGETS_PRE: gmpy2-build-deps
       # Disable building PyPy wheels on all platforms
       CIBW_SKIP: pp*
       # https://cibuildwheel.readthedocs.io/en/stable/options/#requires-python
