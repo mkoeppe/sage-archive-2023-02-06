@@ -33,14 +33,48 @@ env:
 
 jobs:
 
-  docker:
+  docker-pre:
     uses: ./.github/workflows/docker.yml
     with:
+      # Build from scratch
+      docker_targets: "with-system-packages configured with-targets-pre"
       # FIXME: duplicated from env.TARGETS
       targets_pre: all-sage-local
+      tox_packages_factors: >-
+          ["minimal",
+           "standard",
+           "maximal",
+           ]
+      docker_push_repository: ghcr.io/${{ github.repository }}/
+
+  docker:
+    needs: [docker-pre]
+    uses: ./.github/workflows/docker.yml
+    with:
+      # Build incrementally from previous stage (docker-pre)
+      docker_targets: "with-targets with-targets-optional"
+      from_docker_target: "targets_pre"
+      # FIXME: duplicated from env.TARGETS
       targets: build doc-html
       targets_optional: ptest
       docker_push_repository: ghcr.io/${{ github.repository }}/
+      # FIXME: set BUILD_IMAGE_STEM to override "-incremental" in the pushed image
+
+  docker-optional-0-o:
+    needs: [docker-pre]
+    uses: ./.github/workflows/docker.yml
+    with:
+      docker_targets: "with-targets-optional"
+      tox_packages_factors: >-
+          ["maximal"]
+      targets_optional: >-
+        $( echo $(export PATH=build/bin:$PATH
+           && (sage-package list :optional: --has-file spkg-install.in &&
+               sage-package list :optional: --has-file spkg-install &&
+               sage-package list :optional: --has-file requirements.txt) | grep -v ^_ | grep -v  database_stein_watkins\\$ | grep -v polytopes_db_4d | grep -v cplex | grep -v gurobi | grep "^[0-o]" )
+
+#  "2-optional-p-z", "2-experimental-0-o", "2-experimental-p-z"
+
 
   local-ubuntu:
 
