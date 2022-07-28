@@ -123,6 +123,7 @@ ARG BASE_IMAGE=nixos/nix:latest
 FROM \${BASE_IMAGE} as with-system-packages
 RUN nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs
 RUN nix-channel --update
+ENV PACKAGES="$SYSTEM_PACKAGES"
 EOF
         INSTALL="nix-env --install"
         RUN="RUN nix-shell --packages \$PACKAGES --run "\'
@@ -179,7 +180,6 @@ case $SYSTEM in
     *)
         cat <<EOF
 #:packages:
-ENV PACKAGES="$SYSTEM_PACKAGES"
 EOF
   case "$IGNORE_MISSING_SYSTEM_PACKAGES" in
     no)
@@ -191,13 +191,13 @@ EOF
         if [ -n "$EXISTS" ]; then
             # Filter by existing packages, try to install these in one shot; fall back to one by one.
             cat <<EOF
-RUN $UPDATE EXISTING_PACKAGES=""; for pkg in \$PACKAGES; do echo -n .; if $EXISTS \$pkg; then EXISTING_PACKAGES="\$EXISTING_PACKAGES \$pkg"; echo -n "\$pkg"; fi; done; $INSTALL \$EXISTING_PACKAGES || (echo "Trying again one by one:"; for pkg in \$EXISTING_PACKAGES; do echo "Trying to install \$pkg"; $INSTALL \$pkg || echo "(ignoring error)"; done); : $CLEAN
+RUN $UPDATE EXISTING_PACKAGES=""; for pkg in $SYSTEM_PACKAGES; do echo -n .; if $EXISTS \$pkg; then EXISTING_PACKAGES="\$EXISTING_PACKAGES \$pkg"; echo -n "\$pkg"; fi; done; $INSTALL \$EXISTING_PACKAGES || (echo "Trying again one by one:"; for pkg in \$EXISTING_PACKAGES; do echo "Trying to install \$pkg"; $INSTALL \$pkg || echo "(ignoring error)"; done); : $CLEAN
 EOF
         else
             # Try in one shot, fall back to one by one.  Separate "RUN" commands
             # for caching by docker.
             cat <<EOF
-RUN $UPDATE $INSTALL \${PACKAGES} || echo "(ignoring error)"
+RUN $UPDATE $INSTALL $SYSTEM_PACKAGES || echo "(ignoring error)"
 EOF
             for pkg in $SYSTEM_PACKAGES; do
                 cat <<EOF
