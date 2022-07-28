@@ -16,55 +16,13 @@ on:
         description: 'Stringified JSON object listing tox system factors'
         type: string
         default: >-
-          ["ubuntu-trusty-toolchain-gcc_9",
-           "ubuntu-xenial-toolchain-gcc_9",
-           "ubuntu-bionic",
-           "ubuntu-focal",
-           "ubuntu-jammy",
-           "ubuntu-kinetic",
-           "debian-stretch",
-           "debian-buster",
-           "debian-bullseye",
-           "debian-bookworm",
-           "debian-sid",
-           "linuxmint-19",
-           "linuxmint-19.3",
-           "linuxmint-20.1",
-           "linuxmint-20.2",
-           "linuxmint-20.3",
-           "linuxmint-21",
-           "fedora-26",
-           "fedora-27",
-           "fedora-28",
-           "fedora-29",
-           "fedora-30",
-           "fedora-31",
-           "fedora-32",
-           "fedora-33",
-           "fedora-34",
-           "fedora-35",
-           "fedora-36",
-           "fedora-37",
-           "centos-7-devtoolset-gcc_11",
-           "centos-stream-8",
-           "centos-stream-9",
-           "gentoo-python3.9",
-           "gentoo-python3.10",
-           "archlinux-latest",
-           "opensuse-15.3",
-           "opensuse-15.4",
-           "opensuse-tumbleweed",
-           "conda-forge",
-           "ubuntu-bionic-i386",
-           "manylinux-2_24-i686",
-           "debian-buster-i386",
+          ["ubuntu-jammy",
            ]
       tox_packages_factors:
         description: 'Stringified JSON object listing tox packages factors'
         type: string
         default: >-
-          ["minimal",
-           "standard",
+          ["standard",
            ]
       max_parallel:
         type: number
