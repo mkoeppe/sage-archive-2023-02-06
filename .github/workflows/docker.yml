@@ -42,6 +42,9 @@ on:
       incremental:
         default: false
         type: boolean
+      from_docker_repository:
+        required: false
+        type: string
       from_docker_target:
         required: false
         type: string
@@ -84,6 +87,7 @@ jobs:
       TARGETS_PRE:        ${{ inputs.targets_pre }}
       TARGETS:            ${{ inputs.targets }}
       TARGETS_OPTIONAL:   ${{ inputs.targets_optional }}
+      FROM_DOCKER_REPOSITORY: ${{ inputs.from_docker_repository }}
       FROM_DOCKER_TARGET: ${{ inputs.from_docker_target }}
       FROM_DOCKER_TAG:    ${{ inputs.from_docker_tag }}
 

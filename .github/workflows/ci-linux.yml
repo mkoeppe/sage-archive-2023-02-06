@@ -48,6 +48,7 @@ jobs:
       # Build incrementally from previous stage (docker-pre)
       docker_targets: "with-targets with-targets-optional"
       incremental: true
+      from_docker_repository: ghcr.io/${{ github.repository }}/
       from_docker_target: "with-targets-pre"
       # FIXME: duplicated from env.TARGETS
       targets: pplpy
@@ -60,6 +61,7 @@ jobs:
     with:
       docker_targets: "with-targets-optional"
       incremental: true
+      from_docker_repository: ghcr.io/${{ github.repository }}/
       from_docker_target: "with-targets-pre"
       tox_packages_factors: >-
           ["standard"]
