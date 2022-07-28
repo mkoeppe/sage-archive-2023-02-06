@@ -47,6 +47,7 @@ jobs:
     with:
       # Build incrementally from previous stage (docker-pre)
       docker_targets: "with-targets with-targets-optional"
+      incremental: true
       from_docker_target: "with-targets-pre"
       # FIXME: duplicated from env.TARGETS
       targets: pplpy
@@ -58,6 +59,7 @@ jobs:
     uses: ./.github/workflows/docker.yml
     with:
       docker_targets: "with-targets-optional"
+      incremental: true
       from_docker_target: "with-targets-pre"
       tox_packages_factors: >-
           ["standard"]
